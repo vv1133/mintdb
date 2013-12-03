@@ -52,7 +52,9 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_mintdb_OBJECTS = mintdb-pmdMain.$(OBJEXT)
+am_mintdb_OBJECTS = mintdb-pmdMain.$(OBJEXT) mintdb-bsonobj.$(OBJEXT) \
+	mintdb-json.$(OBJEXT) mintdb-oid.$(OBJEXT) \
+	mintdb-base64.$(OBJEXT) md5.$(OBJEXT) mintdb-nonce.$(OBJEXT)
 mintdb_OBJECTS = $(am_mintdb_OBJECTS)
 mintdb_DEPENDENCIES =
 mintdb_LINK = $(CXXLD) $(mintdb_CXXFLAGS) $(CXXFLAGS) \
@@ -61,6 +63,10 @@ DEFAULT_INCLUDES = -I.
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -185,7 +191,9 @@ top_builddir = .
 top_srcdir = .
 AUTOMAKE_OPTIONS = foreign
 mintdb_SOURCES = \
-	pmd/pmdMain.cpp 
+	pmd/pmdMain.cpp \
+	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
+	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp
 
 mintdb_CXXFLAGS = -I../boost -Ibson/src -Iinclude -D_FILE_OFFSET_BITS=64 -ggdb -Wall -O0
 mintdb_LDADD = -lpthread -lm -lboost_system -lboost_thread -lboost_program_options -lrt
@@ -194,7 +202,7 @@ all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .cpp .o .obj
+.SUFFIXES: .c .cpp .o .obj
 am--refresh: Makefile
 	@:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -291,7 +299,41 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+include ./$(DEPDIR)/md5.Po
+include ./$(DEPDIR)/mintdb-base64.Po
+include ./$(DEPDIR)/mintdb-bsonobj.Po
+include ./$(DEPDIR)/mintdb-json.Po
+include ./$(DEPDIR)/mintdb-nonce.Po
+include ./$(DEPDIR)/mintdb-oid.Po
 include ./$(DEPDIR)/mintdb-pmdMain.Po
+
+.c.o:
+	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+#	source='$<' object='$@' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(COMPILE) -c $<
+
+.c.obj:
+	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+#	source='$<' object='$@' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+md5.o: bson/src/lib/md5.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT md5.o -MD -MP -MF $(DEPDIR)/md5.Tpo -c -o md5.o `test -f 'bson/src/lib/md5.c' || echo '$(srcdir)/'`bson/src/lib/md5.c
+	$(am__mv) $(DEPDIR)/md5.Tpo $(DEPDIR)/md5.Po
+#	source='bson/src/lib/md5.c' object='md5.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o md5.o `test -f 'bson/src/lib/md5.c' || echo '$(srcdir)/'`bson/src/lib/md5.c
+
+md5.obj: bson/src/lib/md5.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT md5.obj -MD -MP -MF $(DEPDIR)/md5.Tpo -c -o md5.obj `if test -f 'bson/src/lib/md5.c'; then $(CYGPATH_W) 'bson/src/lib/md5.c'; else $(CYGPATH_W) '$(srcdir)/bson/src/lib/md5.c'; fi`
+	$(am__mv) $(DEPDIR)/md5.Tpo $(DEPDIR)/md5.Po
+#	source='bson/src/lib/md5.c' object='md5.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o md5.obj `if test -f 'bson/src/lib/md5.c'; then $(CYGPATH_W) 'bson/src/lib/md5.c'; else $(CYGPATH_W) '$(srcdir)/bson/src/lib/md5.c'; fi`
 
 .cpp.o:
 	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -320,6 +362,76 @@ mintdb-pmdMain.obj: pmd/pmdMain.cpp
 #	source='pmd/pmdMain.cpp' object='mintdb-pmdMain.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pmdMain.obj `if test -f 'pmd/pmdMain.cpp'; then $(CYGPATH_W) 'pmd/pmdMain.cpp'; else $(CYGPATH_W) '$(srcdir)/pmd/pmdMain.cpp'; fi`
+
+mintdb-bsonobj.o: bson/src/bsonobj.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-bsonobj.o -MD -MP -MF $(DEPDIR)/mintdb-bsonobj.Tpo -c -o mintdb-bsonobj.o `test -f 'bson/src/bsonobj.cpp' || echo '$(srcdir)/'`bson/src/bsonobj.cpp
+	$(am__mv) $(DEPDIR)/mintdb-bsonobj.Tpo $(DEPDIR)/mintdb-bsonobj.Po
+#	source='bson/src/bsonobj.cpp' object='mintdb-bsonobj.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-bsonobj.o `test -f 'bson/src/bsonobj.cpp' || echo '$(srcdir)/'`bson/src/bsonobj.cpp
+
+mintdb-bsonobj.obj: bson/src/bsonobj.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-bsonobj.obj -MD -MP -MF $(DEPDIR)/mintdb-bsonobj.Tpo -c -o mintdb-bsonobj.obj `if test -f 'bson/src/bsonobj.cpp'; then $(CYGPATH_W) 'bson/src/bsonobj.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/bsonobj.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mintdb-bsonobj.Tpo $(DEPDIR)/mintdb-bsonobj.Po
+#	source='bson/src/bsonobj.cpp' object='mintdb-bsonobj.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-bsonobj.obj `if test -f 'bson/src/bsonobj.cpp'; then $(CYGPATH_W) 'bson/src/bsonobj.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/bsonobj.cpp'; fi`
+
+mintdb-json.o: bson/src/util/json.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-json.o -MD -MP -MF $(DEPDIR)/mintdb-json.Tpo -c -o mintdb-json.o `test -f 'bson/src/util/json.cpp' || echo '$(srcdir)/'`bson/src/util/json.cpp
+	$(am__mv) $(DEPDIR)/mintdb-json.Tpo $(DEPDIR)/mintdb-json.Po
+#	source='bson/src/util/json.cpp' object='mintdb-json.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-json.o `test -f 'bson/src/util/json.cpp' || echo '$(srcdir)/'`bson/src/util/json.cpp
+
+mintdb-json.obj: bson/src/util/json.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-json.obj -MD -MP -MF $(DEPDIR)/mintdb-json.Tpo -c -o mintdb-json.obj `if test -f 'bson/src/util/json.cpp'; then $(CYGPATH_W) 'bson/src/util/json.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/util/json.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mintdb-json.Tpo $(DEPDIR)/mintdb-json.Po
+#	source='bson/src/util/json.cpp' object='mintdb-json.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-json.obj `if test -f 'bson/src/util/json.cpp'; then $(CYGPATH_W) 'bson/src/util/json.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/util/json.cpp'; fi`
+
+mintdb-oid.o: bson/src/oid.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-oid.o -MD -MP -MF $(DEPDIR)/mintdb-oid.Tpo -c -o mintdb-oid.o `test -f 'bson/src/oid.cpp' || echo '$(srcdir)/'`bson/src/oid.cpp
+	$(am__mv) $(DEPDIR)/mintdb-oid.Tpo $(DEPDIR)/mintdb-oid.Po
+#	source='bson/src/oid.cpp' object='mintdb-oid.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-oid.o `test -f 'bson/src/oid.cpp' || echo '$(srcdir)/'`bson/src/oid.cpp
+
+mintdb-oid.obj: bson/src/oid.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-oid.obj -MD -MP -MF $(DEPDIR)/mintdb-oid.Tpo -c -o mintdb-oid.obj `if test -f 'bson/src/oid.cpp'; then $(CYGPATH_W) 'bson/src/oid.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/oid.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mintdb-oid.Tpo $(DEPDIR)/mintdb-oid.Po
+#	source='bson/src/oid.cpp' object='mintdb-oid.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-oid.obj `if test -f 'bson/src/oid.cpp'; then $(CYGPATH_W) 'bson/src/oid.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/oid.cpp'; fi`
+
+mintdb-base64.o: bson/src/lib/base64.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-base64.o -MD -MP -MF $(DEPDIR)/mintdb-base64.Tpo -c -o mintdb-base64.o `test -f 'bson/src/lib/base64.cpp' || echo '$(srcdir)/'`bson/src/lib/base64.cpp
+	$(am__mv) $(DEPDIR)/mintdb-base64.Tpo $(DEPDIR)/mintdb-base64.Po
+#	source='bson/src/lib/base64.cpp' object='mintdb-base64.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-base64.o `test -f 'bson/src/lib/base64.cpp' || echo '$(srcdir)/'`bson/src/lib/base64.cpp
+
+mintdb-base64.obj: bson/src/lib/base64.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-base64.obj -MD -MP -MF $(DEPDIR)/mintdb-base64.Tpo -c -o mintdb-base64.obj `if test -f 'bson/src/lib/base64.cpp'; then $(CYGPATH_W) 'bson/src/lib/base64.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/lib/base64.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mintdb-base64.Tpo $(DEPDIR)/mintdb-base64.Po
+#	source='bson/src/lib/base64.cpp' object='mintdb-base64.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-base64.obj `if test -f 'bson/src/lib/base64.cpp'; then $(CYGPATH_W) 'bson/src/lib/base64.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/lib/base64.cpp'; fi`
+
+mintdb-nonce.o: bson/src/lib/nonce.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-nonce.o -MD -MP -MF $(DEPDIR)/mintdb-nonce.Tpo -c -o mintdb-nonce.o `test -f 'bson/src/lib/nonce.cpp' || echo '$(srcdir)/'`bson/src/lib/nonce.cpp
+	$(am__mv) $(DEPDIR)/mintdb-nonce.Tpo $(DEPDIR)/mintdb-nonce.Po
+#	source='bson/src/lib/nonce.cpp' object='mintdb-nonce.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-nonce.o `test -f 'bson/src/lib/nonce.cpp' || echo '$(srcdir)/'`bson/src/lib/nonce.cpp
+
+mintdb-nonce.obj: bson/src/lib/nonce.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-nonce.obj -MD -MP -MF $(DEPDIR)/mintdb-nonce.Tpo -c -o mintdb-nonce.obj `if test -f 'bson/src/lib/nonce.cpp'; then $(CYGPATH_W) 'bson/src/lib/nonce.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/lib/nonce.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mintdb-nonce.Tpo $(DEPDIR)/mintdb-nonce.Po
+#	source='bson/src/lib/nonce.cpp' object='mintdb-nonce.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-nonce.obj `if test -f 'bson/src/lib/nonce.cpp'; then $(CYGPATH_W) 'bson/src/lib/nonce.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/lib/nonce.cpp'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -662,8 +774,6 @@ uninstall-am: uninstall-binPROGRAMS
 	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
 	uninstall-am uninstall-binPROGRAMS
 
-	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
-	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
