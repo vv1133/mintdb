@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include "ossSocket.hpp"
+#include "pd.hpp"
 
 // Create a listening socket
 _ossSocket::_ossSocket(unsigned int port, int timeout)
@@ -62,23 +62,24 @@ _ossSocket::_ossSocket ( int *sock, int timeout )
    rc = getsockname ( _fd, (sockaddr*)&_sockAddress, &_addressLen ) ;
    if ( rc )
    {
-      printf ( "Failed to get sock name, error = %d",
-              SOCKET_GETLASTERROR ) ;
+      PD_LOG ( PDERROR, "Failed to get sock name, error = %d",
+               SOCKET_GETLASTERROR ) ;
       _init = false ;
    }
    else
    {
       //get peer address
       rc = getpeername ( _fd, (sockaddr*)&_peerAddress, &_peerAddressLen ) ;
-      if ( rc )
-      {
-         printf ( "Failed to get peer name, error = %d",
-                 SOCKET_GETLASTERROR ) ;
-      }
+      PD_RC_CHECK ( rc, PDERROR, "Failed to get peer name, error = %d",
+                    SOCKET_GETLASTERROR ) ;
    }
+done :
+   return ;
+error :
+   goto done ;
 }
 
-int ossSocket::initSocket ()
+int _ossSocket::initSocket ()
 {
    int rc = MDB_OK ;
    if ( _init )
@@ -91,13 +92,12 @@ int ossSocket::initSocket ()
    _fd = socket ( AF_INET, SOCK_STREAM, IPPROTO_TCP ) ;
    if ( -1 == _fd )
    {
-      printf ( "Failed to initialize socket, error = %d",
-              SOCKET_GETLASTERROR ) ;
-      rc = MDB_NETWORK ;
-      goto error ;
+      PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                    "Failed to initialize socket, error = %d",
+                    SOCKET_GETLASTERROR ) ;
    }
    _init = true ;
-   // settimeout should always return MDB_OK
+   // set timeout
    setTimeout ( _timeout ) ;
 done :
    return rc ;
@@ -105,7 +105,7 @@ error:
    goto done ;
 }
 
-int ossSocket::setSocketLi ( int lOnOff, int linger )
+int _ossSocket::setSocketLi ( int lOnOff, int linger )
 {
    int rc = MDB_OK ;
    struct linger _linger ;
@@ -123,7 +123,6 @@ void ossSocket::setAddress(const char* pHostname, unsigned int port )
     memset ( &_sockAddress, 0, sizeof(sockaddr_in) ) ;
     memset ( &_peerAddress, 0, sizeof(sockaddr_in) ) ;
     _peerAddressLen = sizeof (_peerAddress) ;
-
     _sockAddress.sin_family = AF_INET ;
     if ( (hp = gethostbyname ( pHostname )))
        _sockAddress.sin_addr.s_addr = *((int *)hp->h_addr_list[0] ) ;
@@ -135,7 +134,7 @@ void ossSocket::setAddress(const char* pHostname, unsigned int port )
 
 }
 
-int ossSocket::bind_listen ()
+int _ossSocket::bind_listen ()
 {
    int rc = MDB_OK ;
    int temp = 1 ;
@@ -147,29 +146,27 @@ int ossSocket::bind_listen ()
                      sizeof (int) );
    if ( rc )
    {
-      printf ( "Failed to setsockopt SO_REUSEADDR, rc = %d",
-              SOCKET_GETLASTERROR ) ;
+      PD_LOG ( PDWARNING, "Failed to setsockopt SO_REUSEADDR, rc = %d",
+               SOCKET_GETLASTERROR ) ;
    }
    rc = setSocketLi( 1, 30 ) ;
    if ( rc )
    {
-      printf ( "Failed to setsockopt SO_LINGER, rc = %d",
-              SOCKET_GETLASTERROR ) ;
+      PD_LOG ( PDWARNING, "Failed to setsockopt SO_LINGER, rc = %d",
+               SOCKET_GETLASTERROR ) ;
    }
    rc = ::bind ( _fd, (struct sockaddr *)&_sockAddress, _addressLen ) ;
    if ( rc )
    {
-      printf ( "Failed to bind socket, rc = %d", SOCKET_GETLASTERROR ) ;
-      rc = MDB_NETWORK ;
-      goto error ;
+      PD_RC_CHECK( MDB_NETWORK, PDERROR,
+                   "Failed to bind socket, rc = %d", SOCKET_GETLASTERROR ) ;
    }
 
    rc = listen ( _fd, SOMAXCONN ) ;
    if ( rc )
    {
-      printf ( "Failed to listen socket, rc = %d", SOCKET_GETLASTERROR ) ;
-      rc = MDB_NETWORK ;
-      goto error ;
+      PD_RC_CHECK( MDB_NETWORK, PDERROR,
+                   "Failed to listen socket, rc = %d", SOCKET_GETLASTERROR ) ;
    }
 done :
    return rc ;
@@ -178,7 +175,7 @@ error :
    goto done ;
 }
 
-int ossSocket::send ( const char *pMsg, int len,
+int _ossSocket::send ( const char *pMsg, int len,
                         int timeout, int flags )
 {
    int rc = MDB_OK ;
@@ -196,7 +193,7 @@ int ossSocket::send ( const char *pMsg, int len,
    {
       FD_ZERO ( &fds ) ;
       FD_SET ( _fd, &fds ) ;
-      rc = select ( maxFD + 1, NULL, &fds, NULL,
+      rc = select ( (int)(maxFD + 1), NULL, &fds, NULL,
                     timeout>=0?&maxSelectTime:NULL ) ;
 
       // 0 means timeout
@@ -210,14 +207,12 @@ int ossSocket::send ( const char *pMsg, int len,
       {
          rc = SOCKET_GETLASTERROR ;
          // if we failed due to interrupt, let's continue
-         if ( EINTR == rc )
+         if ( OSS_EINTR == rc )
          {
             continue ;
          }
-         printf ( "Failed to select from socket, rc = %d",
-                 rc);
-         rc = MDB_NETWORK ;
-         goto error ;
+         PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                       "Failed to select from socket, rc = %d", rc ) ;
       }
 
       // if the socket we interested is not receiving anything, let's continue
@@ -234,9 +229,8 @@ int ossSocket::send ( const char *pMsg, int len,
       rc = ::send ( _fd, pMsg, len, MSG_NOSIGNAL|flags ) ;
       if ( -1 == rc )
       {
-         printf ( "Failed to send, rc = %d", SOCKET_GETLASTERROR ) ;
-         rc = MDB_NETWORK ;
-         goto error ;
+         PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                       "Failed to send, rc = %d", SOCKET_GETLASTERROR ) ;
       }
       len -= rc ;
       pMsg += rc ;
@@ -248,7 +242,7 @@ error :
    goto done ;
 }
 
-bool ossSocket::isConnected ()
+bool _ossSocket::isConnected ()
 {
    int rc = MDB_OK ;
    // MSG_NOSIGNAL : Requests not to send SIGPIPE on errors on stream
@@ -263,7 +257,7 @@ bool ossSocket::isConnected ()
 }
 
 #define MAX_RECV_RETRIES 5
-int ossSocket::recv ( char *pMsg, int len,
+int _ossSocket::recv ( char *pMsg, int len,
                         int timeout, int flags )
 {
    int rc = MDB_OK ;
@@ -298,13 +292,12 @@ int ossSocket::recv ( char *pMsg, int len,
       {
          rc = SOCKET_GETLASTERROR ;
          // if we failed due to interrupt, let's continue
-         if ( EINTR == rc )
+         if ( OSS_EINTR == rc )
          {
             continue ;
          }
-         printf ( "Failed to select from socket, rc = %d", rc);
-         rc = MDB_NETWORK ;
-         goto error ;
+         PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                       "Failed to select from socket, rc = %d", rc ) ;
       }
 
       // if the socket we interested is not receiving anything, let's continue
@@ -333,32 +326,27 @@ int ossSocket::recv ( char *pMsg, int len,
       }
       else if ( rc == 0 )
       {
-         printf ( "Peer unexpected shutdown" ) ;
-         rc = MDB_NETWORK_CLOSE ;
-         goto error ;
+         PD_RC_CHECK ( MDB_NETWORK_CLOSE, PDWARNING,
+                       "Peer unexpected shutdown" ) ;
       }
       else
       {
          // if rc < 0
          rc = SOCKET_GETLASTERROR ;
-         if ( (EAGAIN == rc || EWOULDBLOCK == rc) &&
+         if ( (OSS_EAGAIN == rc || EWOULDBLOCK == rc) &&
               _timeout > 0 )
          {
-            // if we timeout, it's partial message and we should restart
-            printf ( "Recv() timeout: rc = %d", rc ) ;
-            rc = MDB_NETWORK ;
-            goto error ;
+            PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                          "Recv() timeout: rc = %d", rc ) ;
          }
-         if ( ( EINTR == rc ) && ( retries < MAX_RECV_RETRIES ) )
+         if ( ( OSS_EINTR == rc ) && ( retries < MAX_RECV_RETRIES ) )
          {
             // less than max_recv_retries number, let's retry
             retries ++ ;
             continue ;
          }
-         // something bad when get here
-         printf ( "Recv() Failed: rc = %d", rc ) ;
-         rc = MDB_NETWORK ;
-         goto error ;
+         PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                       "Recv() Failed: rc = %d", rc ) ;
       }
    }
    // Everything is fine when get here
@@ -369,7 +357,7 @@ error :
    goto done ;
 }
 
-int ossSocket::recvNF ( char *pMsg, int &len,
+int _ossSocket::recvNF ( char *pMsg, int len,
                           int timeout )
 {
    int rc = MDB_OK ;
@@ -403,14 +391,12 @@ int ossSocket::recvNF ( char *pMsg, int &len,
       {
          rc = SOCKET_GETLASTERROR ;
          // if we failed due to interrupt, let's continue
-         if ( EINTR == rc )
+         if ( OSS_EINTR == rc )
          {
             continue ;
          }
-         printf ( "Failed to select from socket, rc = %d",
-                 rc);
-         rc = MDB_NETWORK ;
-         goto error ;
+         PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                       "Failed to select from socket, rc = %d", rc ) ;
       }
 
       // if the socket we interested is not receiving anything, let's continue
@@ -431,9 +417,8 @@ int ossSocket::recvNF ( char *pMsg, int &len,
    }
    else if ( rc == 0 )
    {
-      printf ( "Peer unexpected shutdown" ) ;
-      rc = MDB_NETWORK_CLOSE ;
-      goto error ;
+      PD_RC_CHECK ( MDB_NETWORK_CLOSE, PDWARNING,
+                    "Peer unexpected shutdown" ) ;
    }
    else
    {
@@ -443,19 +428,17 @@ int ossSocket::recvNF ( char *pMsg, int &len,
            _timeout > 0 )
       {
          // if we timeout, it's partial message and we should restart
-         printf ( "Recv() timeout: rc = %d", rc ) ;
-         rc = MDB_NETWORK ;
-         goto error ;
+         PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                       "Recv() timeout: rc = %d", rc ) ;
       }
-      if ( ( EINTR == rc ) && ( retries < MAX_RECV_RETRIES ) )
+      if ( ( OSS_EINTR == rc ) && ( retries < MAX_RECV_RETRIES ) )
       {
          // less than max_recv_retries number, let's retry
          retries ++ ;
       }
       // something bad when get here
-      printf ( "Recv() Failed: rc = %d", rc ) ;
-      rc = MDB_NETWORK ;
-      goto error ;
+      PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                    "Recv() Failed: rc = %d", rc ) ;
    }
    // Everything is fine when get here
    rc = MDB_OK ;
@@ -464,32 +447,29 @@ done :
 error :
    goto done ;
 }
-int ossSocket::connect ()
+int _ossSocket::connect ()
 {
    int rc = MDB_OK ;
    rc = ::connect ( _fd, (struct sockaddr *) &_sockAddress, _addressLen ) ;
    if ( rc )
    {
-      printf ( "Failed to connect, rc = %d", SOCKET_GETLASTERROR ) ;
-      rc = MDB_NETWORK ;
-      goto error ;
+      PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                    "Failed to connect, rc = %d", SOCKET_GETLASTERROR ) ;
    }
 
    //get local address
    rc = getsockname ( _fd, (sockaddr*)&_sockAddress, &_addressLen ) ;
    if ( rc )
    {
-      printf ( "Failed to get local address, rc=%d", rc ) ;
-      rc = MDB_NETWORK ;
-      goto error ;
+      PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                    "Failed to get local address, rc = %d", rc ) ;
    }
    //get peer address
    rc = getpeername ( _fd, (sockaddr*)&_peerAddress, &_peerAddressLen ) ;
    if ( rc )
    {
-      printf ( "Failed to get peer address, rc=%d", rc ) ;
-      rc = MDB_NETWORK ;
-      goto error ;
+      PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                    "Failed to get peer address, rc = %d", rc ) ;
    }
 done :
    return rc ;
@@ -497,12 +477,12 @@ error :
    goto done ;
 }
 
-void ossSocket::close ()
+void _ossSocket::close ()
 {
    if ( _init )
    {
       int i = 0 ;
-      i = ::close ( _fd ) ;
+      i = ::closesocket ( _fd ) ;
       if ( i < 0 )
       {
          i = -1 ;
@@ -510,7 +490,8 @@ void ossSocket::close ()
       _init = false ;
    }
 }
-int ossSocket::accept ( int *sock, struct sockaddr *addr, socklen_t
+
+int _ossSocket::accept ( int *sock, struct sockaddr *addr, socklen_t
                           *addrlen, int timeout )
 {
    int rc = MDB_OK ;
@@ -539,13 +520,13 @@ int ossSocket::accept ( int *sock, struct sockaddr *addr, socklen_t
       {
          rc = SOCKET_GETLASTERROR ;
          // if we failed due to interrupt, let's continue
-         if ( EINTR == rc )
+         if ( OSS_EINTR == rc )
          {
             continue ;
          }
-         printf ( "Failed to select from socket, rc = %d", SOCKET_GETLASTERROR);
-         rc = MDB_NETWORK ;
-         goto error ;
+         PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                       "Failed to select from socket, rc = %d",
+                       SOCKET_GETLASTERROR);
       }
 
       // if the socket we interested is not receiving anything, let's continue
@@ -559,9 +540,9 @@ int ossSocket::accept ( int *sock, struct sockaddr *addr, socklen_t
    *sock = ::accept ( _fd, addr, addrlen ) ;
    if ( -1 == *sock )
    {
-      printf ( "Failed to accept socket, rc = %d", SOCKET_GETLASTERROR ) ;
-      rc = MDB_NETWORK ;
-      goto error ;
+      PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                    "Failed to accept socket, rc = %d",
+                    SOCKET_GETLASTERROR ) ;
    }
 done :
    return rc ;
@@ -570,7 +551,7 @@ error :
    goto done ;
 }
 
-int ossSocket::disableNagle ()
+int _ossSocket::disableNagle ()
 {
    int rc = MDB_OK ;
    int temp = 1 ;
@@ -578,24 +559,24 @@ int ossSocket::disableNagle ()
                      sizeof ( int ) ) ;
    if ( rc )
    {
-      printf ( "Failed to setsockopt, rc = %d", SOCKET_GETLASTERROR ) ;
+      PD_LOG ( PDWARNING, "Failed to setsockopt, rc = %d", SOCKET_GETLASTERROR ) ;
    }
 
    rc = setsockopt ( _fd, SOL_SOCKET, SO_KEEPALIVE, (char *) &temp,
                      sizeof ( int ) ) ;
    if ( rc )
    {
-      printf ( "Failed to setsockopt, rc = %d", SOCKET_GETLASTERROR ) ;
+      PD_LOG ( PDWARNING, "Failed to setsockopt, rc = %d", SOCKET_GETLASTERROR ) ;
    }
    return rc ;
 }
 
-unsigned int ossSocket::_getPort ( sockaddr_in *addr )
+unsigned int _ossSocket::_getPort ( sockaddr_in *addr )
 {
    return ntohs ( addr->sin_port ) ;
 }
 
-int ossSocket::_getAddress ( sockaddr_in *addr, char *pAddress, unsigned int length
+int _ossSocket::_getAddress ( sockaddr_in *addr, char *pAddress, unsigned int length
 )
 {
    int rc = MDB_OK ;
@@ -605,36 +586,41 @@ length,
                        NULL, 0, NI_NUMERICHOST ) ;
    if ( rc )
    {
-      printf ( "Failed to getnameinfo, rc = %d", SOCKET_GETLASTERROR ) ;
-      rc = MDB_NETWORK ;
-      goto error ;
+      PD_RC_CHECK ( MDB_NETWORK, PDERROR,
+                    "Failed to getnameinfo, rc = %d", SOCKET_GETLASTERROR ) ;
    }
 done :
    return rc ;
 error :
    goto done ;
 }
-unsigned int ossSocket::getLocalPort ()
+
+int _ossSocket::setAnsyn () 
+{
+   return fcntl(_fd, F_SETFL, O_NONBLOCK | fcntl(_fd, F_GETFL, 0));
+}
+
+unsigned int _ossSocket::getLocalPort ()
 {
    return _getPort ( &_sockAddress ) ;
 }
 
-unsigned int ossSocket::getPeerPort ()
+unsigned int _ossSocket::getPeerPort ()
 {
    return _getPort ( &_peerAddress ) ;
 }
 
-int ossSocket::getLocalAddress ( char * pAddress, unsigned int length )
+int _ossSocket::getLocalAddress ( char * pAddress, unsigned int length )
 {
    return _getAddress ( &_sockAddress, pAddress, length ) ;
 }
 
-int ossSocket::getPeerAddress ( char * pAddress, unsigned int length )
+int _ossSocket::getPeerAddress ( char * pAddress, unsigned int length )
 {
    return _getAddress ( &_peerAddress, pAddress, length ) ;
 }
 
-int ossSocket::setTimeout ( int seconds )
+int _ossSocket::setTimeout ( int seconds )
 {
    int rc = MDB_OK ;
    struct timeval tv ;
@@ -647,14 +633,16 @@ int ossSocket::setTimeout ( int seconds )
                      sizeof ( tv ) ) ;
    if ( rc )
    {
-      printf ( "Failed to setsockopt, rc = %d", SOCKET_GETLASTERROR ) ;
+      PD_LOG ( PDWARNING, "Failed to setsockopt, rc = %d",
+               SOCKET_GETLASTERROR ) ;
    }
 
    rc = setsockopt ( _fd, SOL_SOCKET, SO_SNDTIMEO, ( char* ) &tv,
                      sizeof ( tv ) ) ;
    if ( rc )
    {
-      printf ( "Failed to setsockopt, rc = %d", SOCKET_GETLASTERROR ) ;
+      PD_LOG ( PDWARNING, "Failed to setsockopt, rc = %d",
+               SOCKET_GETLASTERROR ) ;
    }
 
    return rc ;

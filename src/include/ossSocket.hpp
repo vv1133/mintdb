@@ -10,7 +10,11 @@
 #include <netdb.h>
 #include <netinet/tcp.h>
 #include <string.h>
+
 #define SOCKET_GETLASTERROR errno
+#define OSS_EAGAIN	EAGAIN
+#define OSS_EINTR	EINTR
+#define closesocket	close
 
 // by default 10ms timeout
 #define OSS_SOCKET_DFT_TIMEOUT 10000
@@ -51,13 +55,14 @@ public :
    int initSocket () ;
    int bind_listen () ;
    bool isConnected () ;
+   int setAnsyn() ;
    int send ( const char *pMsg, int len,
                 int timeout = OSS_SOCKET_DFT_TIMEOUT,
                 int flags = 0 ) ;
    int recv ( char *pMsg, int len,
                 int timeout = OSS_SOCKET_DFT_TIMEOUT,
                 int flags = 0 ) ;
-   int recvNF ( char *pMsg, int &len,
+   int recvNF ( char *pMsg, int len,
                   int timeout = OSS_SOCKET_DFT_TIMEOUT ) ;
 
    int connect () ;

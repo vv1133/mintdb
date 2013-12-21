@@ -2,8 +2,10 @@
 
 using namespace std;
 
+int pmdTcpListenerEntryPoint();
 int main(int argc, char **argv)
 {
-	cout<<"hello world"<<endl;
+	pmdTcpListenerEntryPoint();
+//	cout<<"hello world"<<endl;
 	return 0;
 }

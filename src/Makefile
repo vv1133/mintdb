@@ -34,7 +34,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = x86_64-unknown-linux-gnu
 host_triplet = x86_64-unknown-linux-gnu
-bin_PROGRAMS = mintdb$(EXEEXT)
+bin_PROGRAMS = mintdb$(EXEEXT) mdb$(EXEEXT)
 subdir = .
 DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
@@ -52,9 +52,21 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_mintdb_OBJECTS = mintdb-pmdMain.$(OBJEXT) mintdb-bsonobj.$(OBJEXT) \
+am_mdb_OBJECTS = mdb-mdb.$(OBJEXT) mdb-command.$(OBJEXT) \
+	mdb-commandFactory.$(OBJEXT) mdb-ossSocket.$(OBJEXT) \
+	mdb-ossPrimitiveFileOp.$(OBJEXT) mdb-bsonobj.$(OBJEXT) \
+	mdb-json.$(OBJEXT) mdb-oid.$(OBJEXT) mdb-base64.$(OBJEXT) \
+	md5.$(OBJEXT) mdb-nonce.$(OBJEXT) mdb-pd.$(OBJEXT)
+mdb_OBJECTS = $(am_mdb_OBJECTS)
+mdb_DEPENDENCIES =
+mdb_LINK = $(CXXLD) $(mdb_CXXFLAGS) $(CXXFLAGS) $(mdb_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_mintdb_OBJECTS = mintdb-pmdMain.$(OBJEXT) \
+	mintdb-pmdTcpListener.$(OBJEXT) mintdb-ossSocket.$(OBJEXT) \
+	mintdb-ossPrimitiveFileOp.$(OBJEXT) mintdb-bsonobj.$(OBJEXT) \
 	mintdb-json.$(OBJEXT) mintdb-oid.$(OBJEXT) \
-	mintdb-base64.$(OBJEXT) md5.$(OBJEXT) mintdb-nonce.$(OBJEXT)
+	mintdb-base64.$(OBJEXT) md5.$(OBJEXT) mintdb-nonce.$(OBJEXT) \
+	mintdb-pd.$(OBJEXT)
 mintdb_OBJECTS = $(am_mintdb_OBJECTS)
 mintdb_DEPENDENCIES =
 mintdb_LINK = $(CXXLD) $(mintdb_CXXFLAGS) $(CXXFLAGS) \
@@ -72,8 +84,8 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(mintdb_SOURCES)
-DIST_SOURCES = $(mintdb_SOURCES)
+SOURCES = $(mdb_SOURCES) $(mintdb_SOURCES)
+DIST_SOURCES = $(mdb_SOURCES) $(mintdb_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -191,13 +203,25 @@ top_builddir = .
 top_srcdir = .
 AUTOMAKE_OPTIONS = foreign
 mintdb_SOURCES = \
-	pmd/pmdMain.cpp \
+	pmd/pmdMain.cpp pmd/pmdTcpListener.cpp\
+	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp\
 	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
-	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp
+	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
+	pd/pd.cpp
+
+mdb_SOURCES = \
+	client/mdb.cpp client/command.cpp client/commandFactory.cpp \
+	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp\
+	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
+	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
+	pd/pd.cpp
 
 mintdb_CXXFLAGS = -I../boost -Ibson/src -Iinclude -D_FILE_OFFSET_BITS=64 -ggdb -Wall -O0
 mintdb_LDADD = -lpthread -lm -lboost_system -lboost_thread -lboost_program_options -lrt
 mintdb_LDFLAGS = -fPIC -rdynamic -L../boost/stage/lib -pthread
+mdb_CXXFLAGS = -I../boost -Ibson/src -Iinclude -D_FILE_OFFSET_BITS=64 -ggdb -Wall -O0
+mdb_LDADD = -lm -lboost_system -lboost_thread -lrt
+mdb_LDFLAGS = -fPIC -rdynamic -L../boost/stage/lib
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -289,6 +313,9 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+mdb$(EXEEXT): $(mdb_OBJECTS) $(mdb_DEPENDENCIES) $(EXTRA_mdb_DEPENDENCIES) 
+	@rm -f mdb$(EXEEXT)
+	$(mdb_LINK) $(mdb_OBJECTS) $(mdb_LDADD) $(LIBS)
 mintdb$(EXEEXT): $(mintdb_OBJECTS) $(mintdb_DEPENDENCIES) $(EXTRA_mintdb_DEPENDENCIES) 
 	@rm -f mintdb$(EXEEXT)
 	$(mintdb_LINK) $(mintdb_OBJECTS) $(mintdb_LDADD) $(LIBS)
@@ -300,12 +327,27 @@ distclean-compile:
 	-rm -f *.tab.c
 
 include ./$(DEPDIR)/md5.Po
+include ./$(DEPDIR)/mdb-base64.Po
+include ./$(DEPDIR)/mdb-bsonobj.Po
+include ./$(DEPDIR)/mdb-command.Po
+include ./$(DEPDIR)/mdb-commandFactory.Po
+include ./$(DEPDIR)/mdb-json.Po
+include ./$(DEPDIR)/mdb-mdb.Po
+include ./$(DEPDIR)/mdb-nonce.Po
+include ./$(DEPDIR)/mdb-oid.Po
+include ./$(DEPDIR)/mdb-ossPrimitiveFileOp.Po
+include ./$(DEPDIR)/mdb-ossSocket.Po
+include ./$(DEPDIR)/mdb-pd.Po
 include ./$(DEPDIR)/mintdb-base64.Po
 include ./$(DEPDIR)/mintdb-bsonobj.Po
 include ./$(DEPDIR)/mintdb-json.Po
 include ./$(DEPDIR)/mintdb-nonce.Po
 include ./$(DEPDIR)/mintdb-oid.Po
+include ./$(DEPDIR)/mintdb-ossPrimitiveFileOp.Po
+include ./$(DEPDIR)/mintdb-ossSocket.Po
+include ./$(DEPDIR)/mintdb-pd.Po
 include ./$(DEPDIR)/mintdb-pmdMain.Po
+include ./$(DEPDIR)/mintdb-pmdTcpListener.Po
 
 .c.o:
 	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -349,6 +391,160 @@ md5.obj: bson/src/lib/md5.c
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
+mdb-mdb.o: client/mdb.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-mdb.o -MD -MP -MF $(DEPDIR)/mdb-mdb.Tpo -c -o mdb-mdb.o `test -f 'client/mdb.cpp' || echo '$(srcdir)/'`client/mdb.cpp
+	$(am__mv) $(DEPDIR)/mdb-mdb.Tpo $(DEPDIR)/mdb-mdb.Po
+#	source='client/mdb.cpp' object='mdb-mdb.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-mdb.o `test -f 'client/mdb.cpp' || echo '$(srcdir)/'`client/mdb.cpp
+
+mdb-mdb.obj: client/mdb.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-mdb.obj -MD -MP -MF $(DEPDIR)/mdb-mdb.Tpo -c -o mdb-mdb.obj `if test -f 'client/mdb.cpp'; then $(CYGPATH_W) 'client/mdb.cpp'; else $(CYGPATH_W) '$(srcdir)/client/mdb.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mdb-mdb.Tpo $(DEPDIR)/mdb-mdb.Po
+#	source='client/mdb.cpp' object='mdb-mdb.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-mdb.obj `if test -f 'client/mdb.cpp'; then $(CYGPATH_W) 'client/mdb.cpp'; else $(CYGPATH_W) '$(srcdir)/client/mdb.cpp'; fi`
+
+mdb-command.o: client/command.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-command.o -MD -MP -MF $(DEPDIR)/mdb-command.Tpo -c -o mdb-command.o `test -f 'client/command.cpp' || echo '$(srcdir)/'`client/command.cpp
+	$(am__mv) $(DEPDIR)/mdb-command.Tpo $(DEPDIR)/mdb-command.Po
+#	source='client/command.cpp' object='mdb-command.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-command.o `test -f 'client/command.cpp' || echo '$(srcdir)/'`client/command.cpp
+
+mdb-command.obj: client/command.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-command.obj -MD -MP -MF $(DEPDIR)/mdb-command.Tpo -c -o mdb-command.obj `if test -f 'client/command.cpp'; then $(CYGPATH_W) 'client/command.cpp'; else $(CYGPATH_W) '$(srcdir)/client/command.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mdb-command.Tpo $(DEPDIR)/mdb-command.Po
+#	source='client/command.cpp' object='mdb-command.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-command.obj `if test -f 'client/command.cpp'; then $(CYGPATH_W) 'client/command.cpp'; else $(CYGPATH_W) '$(srcdir)/client/command.cpp'; fi`
+
+mdb-commandFactory.o: client/commandFactory.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-commandFactory.o -MD -MP -MF $(DEPDIR)/mdb-commandFactory.Tpo -c -o mdb-commandFactory.o `test -f 'client/commandFactory.cpp' || echo '$(srcdir)/'`client/commandFactory.cpp
+	$(am__mv) $(DEPDIR)/mdb-commandFactory.Tpo $(DEPDIR)/mdb-commandFactory.Po
+#	source='client/commandFactory.cpp' object='mdb-commandFactory.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-commandFactory.o `test -f 'client/commandFactory.cpp' || echo '$(srcdir)/'`client/commandFactory.cpp
+
+mdb-commandFactory.obj: client/commandFactory.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-commandFactory.obj -MD -MP -MF $(DEPDIR)/mdb-commandFactory.Tpo -c -o mdb-commandFactory.obj `if test -f 'client/commandFactory.cpp'; then $(CYGPATH_W) 'client/commandFactory.cpp'; else $(CYGPATH_W) '$(srcdir)/client/commandFactory.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mdb-commandFactory.Tpo $(DEPDIR)/mdb-commandFactory.Po
+#	source='client/commandFactory.cpp' object='mdb-commandFactory.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-commandFactory.obj `if test -f 'client/commandFactory.cpp'; then $(CYGPATH_W) 'client/commandFactory.cpp'; else $(CYGPATH_W) '$(srcdir)/client/commandFactory.cpp'; fi`
+
+mdb-ossSocket.o: oss/ossSocket.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-ossSocket.o -MD -MP -MF $(DEPDIR)/mdb-ossSocket.Tpo -c -o mdb-ossSocket.o `test -f 'oss/ossSocket.cpp' || echo '$(srcdir)/'`oss/ossSocket.cpp
+	$(am__mv) $(DEPDIR)/mdb-ossSocket.Tpo $(DEPDIR)/mdb-ossSocket.Po
+#	source='oss/ossSocket.cpp' object='mdb-ossSocket.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-ossSocket.o `test -f 'oss/ossSocket.cpp' || echo '$(srcdir)/'`oss/ossSocket.cpp
+
+mdb-ossSocket.obj: oss/ossSocket.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-ossSocket.obj -MD -MP -MF $(DEPDIR)/mdb-ossSocket.Tpo -c -o mdb-ossSocket.obj `if test -f 'oss/ossSocket.cpp'; then $(CYGPATH_W) 'oss/ossSocket.cpp'; else $(CYGPATH_W) '$(srcdir)/oss/ossSocket.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mdb-ossSocket.Tpo $(DEPDIR)/mdb-ossSocket.Po
+#	source='oss/ossSocket.cpp' object='mdb-ossSocket.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-ossSocket.obj `if test -f 'oss/ossSocket.cpp'; then $(CYGPATH_W) 'oss/ossSocket.cpp'; else $(CYGPATH_W) '$(srcdir)/oss/ossSocket.cpp'; fi`
+
+mdb-ossPrimitiveFileOp.o: oss/ossPrimitiveFileOp.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-ossPrimitiveFileOp.o -MD -MP -MF $(DEPDIR)/mdb-ossPrimitiveFileOp.Tpo -c -o mdb-ossPrimitiveFileOp.o `test -f 'oss/ossPrimitiveFileOp.cpp' || echo '$(srcdir)/'`oss/ossPrimitiveFileOp.cpp
+	$(am__mv) $(DEPDIR)/mdb-ossPrimitiveFileOp.Tpo $(DEPDIR)/mdb-ossPrimitiveFileOp.Po
+#	source='oss/ossPrimitiveFileOp.cpp' object='mdb-ossPrimitiveFileOp.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-ossPrimitiveFileOp.o `test -f 'oss/ossPrimitiveFileOp.cpp' || echo '$(srcdir)/'`oss/ossPrimitiveFileOp.cpp
+
+mdb-ossPrimitiveFileOp.obj: oss/ossPrimitiveFileOp.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-ossPrimitiveFileOp.obj -MD -MP -MF $(DEPDIR)/mdb-ossPrimitiveFileOp.Tpo -c -o mdb-ossPrimitiveFileOp.obj `if test -f 'oss/ossPrimitiveFileOp.cpp'; then $(CYGPATH_W) 'oss/ossPrimitiveFileOp.cpp'; else $(CYGPATH_W) '$(srcdir)/oss/ossPrimitiveFileOp.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mdb-ossPrimitiveFileOp.Tpo $(DEPDIR)/mdb-ossPrimitiveFileOp.Po
+#	source='oss/ossPrimitiveFileOp.cpp' object='mdb-ossPrimitiveFileOp.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-ossPrimitiveFileOp.obj `if test -f 'oss/ossPrimitiveFileOp.cpp'; then $(CYGPATH_W) 'oss/ossPrimitiveFileOp.cpp'; else $(CYGPATH_W) '$(srcdir)/oss/ossPrimitiveFileOp.cpp'; fi`
+
+mdb-bsonobj.o: bson/src/bsonobj.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-bsonobj.o -MD -MP -MF $(DEPDIR)/mdb-bsonobj.Tpo -c -o mdb-bsonobj.o `test -f 'bson/src/bsonobj.cpp' || echo '$(srcdir)/'`bson/src/bsonobj.cpp
+	$(am__mv) $(DEPDIR)/mdb-bsonobj.Tpo $(DEPDIR)/mdb-bsonobj.Po
+#	source='bson/src/bsonobj.cpp' object='mdb-bsonobj.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-bsonobj.o `test -f 'bson/src/bsonobj.cpp' || echo '$(srcdir)/'`bson/src/bsonobj.cpp
+
+mdb-bsonobj.obj: bson/src/bsonobj.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-bsonobj.obj -MD -MP -MF $(DEPDIR)/mdb-bsonobj.Tpo -c -o mdb-bsonobj.obj `if test -f 'bson/src/bsonobj.cpp'; then $(CYGPATH_W) 'bson/src/bsonobj.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/bsonobj.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mdb-bsonobj.Tpo $(DEPDIR)/mdb-bsonobj.Po
+#	source='bson/src/bsonobj.cpp' object='mdb-bsonobj.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-bsonobj.obj `if test -f 'bson/src/bsonobj.cpp'; then $(CYGPATH_W) 'bson/src/bsonobj.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/bsonobj.cpp'; fi`
+
+mdb-json.o: bson/src/util/json.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-json.o -MD -MP -MF $(DEPDIR)/mdb-json.Tpo -c -o mdb-json.o `test -f 'bson/src/util/json.cpp' || echo '$(srcdir)/'`bson/src/util/json.cpp
+	$(am__mv) $(DEPDIR)/mdb-json.Tpo $(DEPDIR)/mdb-json.Po
+#	source='bson/src/util/json.cpp' object='mdb-json.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-json.o `test -f 'bson/src/util/json.cpp' || echo '$(srcdir)/'`bson/src/util/json.cpp
+
+mdb-json.obj: bson/src/util/json.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-json.obj -MD -MP -MF $(DEPDIR)/mdb-json.Tpo -c -o mdb-json.obj `if test -f 'bson/src/util/json.cpp'; then $(CYGPATH_W) 'bson/src/util/json.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/util/json.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mdb-json.Tpo $(DEPDIR)/mdb-json.Po
+#	source='bson/src/util/json.cpp' object='mdb-json.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-json.obj `if test -f 'bson/src/util/json.cpp'; then $(CYGPATH_W) 'bson/src/util/json.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/util/json.cpp'; fi`
+
+mdb-oid.o: bson/src/oid.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-oid.o -MD -MP -MF $(DEPDIR)/mdb-oid.Tpo -c -o mdb-oid.o `test -f 'bson/src/oid.cpp' || echo '$(srcdir)/'`bson/src/oid.cpp
+	$(am__mv) $(DEPDIR)/mdb-oid.Tpo $(DEPDIR)/mdb-oid.Po
+#	source='bson/src/oid.cpp' object='mdb-oid.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-oid.o `test -f 'bson/src/oid.cpp' || echo '$(srcdir)/'`bson/src/oid.cpp
+
+mdb-oid.obj: bson/src/oid.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-oid.obj -MD -MP -MF $(DEPDIR)/mdb-oid.Tpo -c -o mdb-oid.obj `if test -f 'bson/src/oid.cpp'; then $(CYGPATH_W) 'bson/src/oid.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/oid.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mdb-oid.Tpo $(DEPDIR)/mdb-oid.Po
+#	source='bson/src/oid.cpp' object='mdb-oid.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-oid.obj `if test -f 'bson/src/oid.cpp'; then $(CYGPATH_W) 'bson/src/oid.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/oid.cpp'; fi`
+
+mdb-base64.o: bson/src/lib/base64.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-base64.o -MD -MP -MF $(DEPDIR)/mdb-base64.Tpo -c -o mdb-base64.o `test -f 'bson/src/lib/base64.cpp' || echo '$(srcdir)/'`bson/src/lib/base64.cpp
+	$(am__mv) $(DEPDIR)/mdb-base64.Tpo $(DEPDIR)/mdb-base64.Po
+#	source='bson/src/lib/base64.cpp' object='mdb-base64.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-base64.o `test -f 'bson/src/lib/base64.cpp' || echo '$(srcdir)/'`bson/src/lib/base64.cpp
+
+mdb-base64.obj: bson/src/lib/base64.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-base64.obj -MD -MP -MF $(DEPDIR)/mdb-base64.Tpo -c -o mdb-base64.obj `if test -f 'bson/src/lib/base64.cpp'; then $(CYGPATH_W) 'bson/src/lib/base64.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/lib/base64.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mdb-base64.Tpo $(DEPDIR)/mdb-base64.Po
+#	source='bson/src/lib/base64.cpp' object='mdb-base64.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-base64.obj `if test -f 'bson/src/lib/base64.cpp'; then $(CYGPATH_W) 'bson/src/lib/base64.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/lib/base64.cpp'; fi`
+
+mdb-nonce.o: bson/src/lib/nonce.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-nonce.o -MD -MP -MF $(DEPDIR)/mdb-nonce.Tpo -c -o mdb-nonce.o `test -f 'bson/src/lib/nonce.cpp' || echo '$(srcdir)/'`bson/src/lib/nonce.cpp
+	$(am__mv) $(DEPDIR)/mdb-nonce.Tpo $(DEPDIR)/mdb-nonce.Po
+#	source='bson/src/lib/nonce.cpp' object='mdb-nonce.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-nonce.o `test -f 'bson/src/lib/nonce.cpp' || echo '$(srcdir)/'`bson/src/lib/nonce.cpp
+
+mdb-nonce.obj: bson/src/lib/nonce.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-nonce.obj -MD -MP -MF $(DEPDIR)/mdb-nonce.Tpo -c -o mdb-nonce.obj `if test -f 'bson/src/lib/nonce.cpp'; then $(CYGPATH_W) 'bson/src/lib/nonce.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/lib/nonce.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mdb-nonce.Tpo $(DEPDIR)/mdb-nonce.Po
+#	source='bson/src/lib/nonce.cpp' object='mdb-nonce.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-nonce.obj `if test -f 'bson/src/lib/nonce.cpp'; then $(CYGPATH_W) 'bson/src/lib/nonce.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/lib/nonce.cpp'; fi`
+
+mdb-pd.o: pd/pd.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-pd.o -MD -MP -MF $(DEPDIR)/mdb-pd.Tpo -c -o mdb-pd.o `test -f 'pd/pd.cpp' || echo '$(srcdir)/'`pd/pd.cpp
+	$(am__mv) $(DEPDIR)/mdb-pd.Tpo $(DEPDIR)/mdb-pd.Po
+#	source='pd/pd.cpp' object='mdb-pd.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-pd.o `test -f 'pd/pd.cpp' || echo '$(srcdir)/'`pd/pd.cpp
+
+mdb-pd.obj: pd/pd.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-pd.obj -MD -MP -MF $(DEPDIR)/mdb-pd.Tpo -c -o mdb-pd.obj `if test -f 'pd/pd.cpp'; then $(CYGPATH_W) 'pd/pd.cpp'; else $(CYGPATH_W) '$(srcdir)/pd/pd.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mdb-pd.Tpo $(DEPDIR)/mdb-pd.Po
+#	source='pd/pd.cpp' object='mdb-pd.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-pd.obj `if test -f 'pd/pd.cpp'; then $(CYGPATH_W) 'pd/pd.cpp'; else $(CYGPATH_W) '$(srcdir)/pd/pd.cpp'; fi`
+
 mintdb-pmdMain.o: pmd/pmdMain.cpp
 	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-pmdMain.o -MD -MP -MF $(DEPDIR)/mintdb-pmdMain.Tpo -c -o mintdb-pmdMain.o `test -f 'pmd/pmdMain.cpp' || echo '$(srcdir)/'`pmd/pmdMain.cpp
 	$(am__mv) $(DEPDIR)/mintdb-pmdMain.Tpo $(DEPDIR)/mintdb-pmdMain.Po
@@ -362,6 +558,48 @@ mintdb-pmdMain.obj: pmd/pmdMain.cpp
 #	source='pmd/pmdMain.cpp' object='mintdb-pmdMain.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pmdMain.obj `if test -f 'pmd/pmdMain.cpp'; then $(CYGPATH_W) 'pmd/pmdMain.cpp'; else $(CYGPATH_W) '$(srcdir)/pmd/pmdMain.cpp'; fi`
+
+mintdb-pmdTcpListener.o: pmd/pmdTcpListener.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-pmdTcpListener.o -MD -MP -MF $(DEPDIR)/mintdb-pmdTcpListener.Tpo -c -o mintdb-pmdTcpListener.o `test -f 'pmd/pmdTcpListener.cpp' || echo '$(srcdir)/'`pmd/pmdTcpListener.cpp
+	$(am__mv) $(DEPDIR)/mintdb-pmdTcpListener.Tpo $(DEPDIR)/mintdb-pmdTcpListener.Po
+#	source='pmd/pmdTcpListener.cpp' object='mintdb-pmdTcpListener.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pmdTcpListener.o `test -f 'pmd/pmdTcpListener.cpp' || echo '$(srcdir)/'`pmd/pmdTcpListener.cpp
+
+mintdb-pmdTcpListener.obj: pmd/pmdTcpListener.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-pmdTcpListener.obj -MD -MP -MF $(DEPDIR)/mintdb-pmdTcpListener.Tpo -c -o mintdb-pmdTcpListener.obj `if test -f 'pmd/pmdTcpListener.cpp'; then $(CYGPATH_W) 'pmd/pmdTcpListener.cpp'; else $(CYGPATH_W) '$(srcdir)/pmd/pmdTcpListener.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mintdb-pmdTcpListener.Tpo $(DEPDIR)/mintdb-pmdTcpListener.Po
+#	source='pmd/pmdTcpListener.cpp' object='mintdb-pmdTcpListener.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pmdTcpListener.obj `if test -f 'pmd/pmdTcpListener.cpp'; then $(CYGPATH_W) 'pmd/pmdTcpListener.cpp'; else $(CYGPATH_W) '$(srcdir)/pmd/pmdTcpListener.cpp'; fi`
+
+mintdb-ossSocket.o: oss/ossSocket.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-ossSocket.o -MD -MP -MF $(DEPDIR)/mintdb-ossSocket.Tpo -c -o mintdb-ossSocket.o `test -f 'oss/ossSocket.cpp' || echo '$(srcdir)/'`oss/ossSocket.cpp
+	$(am__mv) $(DEPDIR)/mintdb-ossSocket.Tpo $(DEPDIR)/mintdb-ossSocket.Po
+#	source='oss/ossSocket.cpp' object='mintdb-ossSocket.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-ossSocket.o `test -f 'oss/ossSocket.cpp' || echo '$(srcdir)/'`oss/ossSocket.cpp
+
+mintdb-ossSocket.obj: oss/ossSocket.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-ossSocket.obj -MD -MP -MF $(DEPDIR)/mintdb-ossSocket.Tpo -c -o mintdb-ossSocket.obj `if test -f 'oss/ossSocket.cpp'; then $(CYGPATH_W) 'oss/ossSocket.cpp'; else $(CYGPATH_W) '$(srcdir)/oss/ossSocket.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mintdb-ossSocket.Tpo $(DEPDIR)/mintdb-ossSocket.Po
+#	source='oss/ossSocket.cpp' object='mintdb-ossSocket.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-ossSocket.obj `if test -f 'oss/ossSocket.cpp'; then $(CYGPATH_W) 'oss/ossSocket.cpp'; else $(CYGPATH_W) '$(srcdir)/oss/ossSocket.cpp'; fi`
+
+mintdb-ossPrimitiveFileOp.o: oss/ossPrimitiveFileOp.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-ossPrimitiveFileOp.o -MD -MP -MF $(DEPDIR)/mintdb-ossPrimitiveFileOp.Tpo -c -o mintdb-ossPrimitiveFileOp.o `test -f 'oss/ossPrimitiveFileOp.cpp' || echo '$(srcdir)/'`oss/ossPrimitiveFileOp.cpp
+	$(am__mv) $(DEPDIR)/mintdb-ossPrimitiveFileOp.Tpo $(DEPDIR)/mintdb-ossPrimitiveFileOp.Po
+#	source='oss/ossPrimitiveFileOp.cpp' object='mintdb-ossPrimitiveFileOp.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-ossPrimitiveFileOp.o `test -f 'oss/ossPrimitiveFileOp.cpp' || echo '$(srcdir)/'`oss/ossPrimitiveFileOp.cpp
+
+mintdb-ossPrimitiveFileOp.obj: oss/ossPrimitiveFileOp.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-ossPrimitiveFileOp.obj -MD -MP -MF $(DEPDIR)/mintdb-ossPrimitiveFileOp.Tpo -c -o mintdb-ossPrimitiveFileOp.obj `if test -f 'oss/ossPrimitiveFileOp.cpp'; then $(CYGPATH_W) 'oss/ossPrimitiveFileOp.cpp'; else $(CYGPATH_W) '$(srcdir)/oss/ossPrimitiveFileOp.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mintdb-ossPrimitiveFileOp.Tpo $(DEPDIR)/mintdb-ossPrimitiveFileOp.Po
+#	source='oss/ossPrimitiveFileOp.cpp' object='mintdb-ossPrimitiveFileOp.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-ossPrimitiveFileOp.obj `if test -f 'oss/ossPrimitiveFileOp.cpp'; then $(CYGPATH_W) 'oss/ossPrimitiveFileOp.cpp'; else $(CYGPATH_W) '$(srcdir)/oss/ossPrimitiveFileOp.cpp'; fi`
 
 mintdb-bsonobj.o: bson/src/bsonobj.cpp
 	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-bsonobj.o -MD -MP -MF $(DEPDIR)/mintdb-bsonobj.Tpo -c -o mintdb-bsonobj.o `test -f 'bson/src/bsonobj.cpp' || echo '$(srcdir)/'`bson/src/bsonobj.cpp
@@ -432,6 +670,20 @@ mintdb-nonce.obj: bson/src/lib/nonce.cpp
 #	source='bson/src/lib/nonce.cpp' object='mintdb-nonce.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-nonce.obj `if test -f 'bson/src/lib/nonce.cpp'; then $(CYGPATH_W) 'bson/src/lib/nonce.cpp'; else $(CYGPATH_W) '$(srcdir)/bson/src/lib/nonce.cpp'; fi`
+
+mintdb-pd.o: pd/pd.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-pd.o -MD -MP -MF $(DEPDIR)/mintdb-pd.Tpo -c -o mintdb-pd.o `test -f 'pd/pd.cpp' || echo '$(srcdir)/'`pd/pd.cpp
+	$(am__mv) $(DEPDIR)/mintdb-pd.Tpo $(DEPDIR)/mintdb-pd.Po
+#	source='pd/pd.cpp' object='mintdb-pd.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pd.o `test -f 'pd/pd.cpp' || echo '$(srcdir)/'`pd/pd.cpp
+
+mintdb-pd.obj: pd/pd.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-pd.obj -MD -MP -MF $(DEPDIR)/mintdb-pd.Tpo -c -o mintdb-pd.obj `if test -f 'pd/pd.cpp'; then $(CYGPATH_W) 'pd/pd.cpp'; else $(CYGPATH_W) '$(srcdir)/pd/pd.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mintdb-pd.Tpo $(DEPDIR)/mintdb-pd.Po
+#	source='pd/pd.cpp' object='mintdb-pd.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pd.obj `if test -f 'pd/pd.cpp'; then $(CYGPATH_W) 'pd/pd.cpp'; else $(CYGPATH_W) '$(srcdir)/pd/pd.cpp'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
