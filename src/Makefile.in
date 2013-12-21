@@ -62,11 +62,11 @@ mdb_DEPENDENCIES =
 mdb_LINK = $(CXXLD) $(mdb_CXXFLAGS) $(CXXFLAGS) $(mdb_LDFLAGS) \
 	$(LDFLAGS) -o $@
 am_mintdb_OBJECTS = mintdb-pmdMain.$(OBJEXT) \
-	mintdb-pmdTcpListener.$(OBJEXT) mintdb-ossSocket.$(OBJEXT) \
-	mintdb-ossPrimitiveFileOp.$(OBJEXT) mintdb-bsonobj.$(OBJEXT) \
-	mintdb-json.$(OBJEXT) mintdb-oid.$(OBJEXT) \
-	mintdb-base64.$(OBJEXT) md5.$(OBJEXT) mintdb-nonce.$(OBJEXT) \
-	mintdb-pd.$(OBJEXT)
+	mintdb-pmdTcpListener.$(OBJEXT) mintdb-pmdOptions.$(OBJEXT) \
+	mintdb-ossSocket.$(OBJEXT) mintdb-ossPrimitiveFileOp.$(OBJEXT) \
+	mintdb-bsonobj.$(OBJEXT) mintdb-json.$(OBJEXT) \
+	mintdb-oid.$(OBJEXT) mintdb-base64.$(OBJEXT) md5.$(OBJEXT) \
+	mintdb-nonce.$(OBJEXT) mintdb-pd.$(OBJEXT)
 mintdb_OBJECTS = $(am_mintdb_OBJECTS)
 mintdb_DEPENDENCIES =
 mintdb_LINK = $(CXXLD) $(mintdb_CXXFLAGS) $(CXXFLAGS) \
@@ -203,7 +203,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
 mintdb_SOURCES = \
-	pmd/pmdMain.cpp pmd/pmdTcpListener.cpp\
+	pmd/pmdMain.cpp pmd/pmdTcpListener.cpp pmd/pmdOptions.cpp\
 	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp\
 	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
 	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
@@ -347,6 +347,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-ossSocket.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-pd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-pmdMain.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-pmdOptions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-pmdTcpListener.Po@am__quote@
 
 .c.o:
@@ -572,6 +573,20 @@ mintdb-pmdTcpListener.obj: pmd/pmdTcpListener.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='pmd/pmdTcpListener.cpp' object='mintdb-pmdTcpListener.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pmdTcpListener.obj `if test -f 'pmd/pmdTcpListener.cpp'; then $(CYGPATH_W) 'pmd/pmdTcpListener.cpp'; else $(CYGPATH_W) '$(srcdir)/pmd/pmdTcpListener.cpp'; fi`
+
+mintdb-pmdOptions.o: pmd/pmdOptions.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-pmdOptions.o -MD -MP -MF $(DEPDIR)/mintdb-pmdOptions.Tpo -c -o mintdb-pmdOptions.o `test -f 'pmd/pmdOptions.cpp' || echo '$(srcdir)/'`pmd/pmdOptions.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/mintdb-pmdOptions.Tpo $(DEPDIR)/mintdb-pmdOptions.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='pmd/pmdOptions.cpp' object='mintdb-pmdOptions.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pmdOptions.o `test -f 'pmd/pmdOptions.cpp' || echo '$(srcdir)/'`pmd/pmdOptions.cpp
+
+mintdb-pmdOptions.obj: pmd/pmdOptions.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-pmdOptions.obj -MD -MP -MF $(DEPDIR)/mintdb-pmdOptions.Tpo -c -o mintdb-pmdOptions.obj `if test -f 'pmd/pmdOptions.cpp'; then $(CYGPATH_W) 'pmd/pmdOptions.cpp'; else $(CYGPATH_W) '$(srcdir)/pmd/pmdOptions.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/mintdb-pmdOptions.Tpo $(DEPDIR)/mintdb-pmdOptions.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='pmd/pmdOptions.cpp' object='mintdb-pmdOptions.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pmdOptions.obj `if test -f 'pmd/pmdOptions.cpp'; then $(CYGPATH_W) 'pmd/pmdOptions.cpp'; else $(CYGPATH_W) '$(srcdir)/pmd/pmdOptions.cpp'; fi`
 
 mintdb-ossSocket.o: oss/ossSocket.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-ossSocket.o -MD -MP -MF $(DEPDIR)/mintdb-ossSocket.Tpo -c -o mintdb-ossSocket.o `test -f 'oss/ossSocket.cpp' || echo '$(srcdir)/'`oss/ossSocket.cpp

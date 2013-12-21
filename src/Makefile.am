@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS=foreign
 bin_PROGRAMS=mintdb mdb
 mintdb_SOURCES=\
-	pmd/pmdMain.cpp pmd/pmdTcpListener.cpp\
+	pmd/pmdMain.cpp pmd/pmdTcpListener.cpp pmd/pmdOptions.cpp\
 	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp\
 	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
 	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
