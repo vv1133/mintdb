@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS=foreign
-bin_PROGRAMS=mintdb mdb
+bin_PROGRAMS=mintdb mdb mtest
 mintdb_SOURCES=\
-	pmd/pmdMain.cpp pmd/pmdTcpListener.cpp pmd/pmdOptions.cpp\
+	pmd/pmdMain.cpp pmd/pmdTcpListener.cpp pmd/pmdOptions.cpp pmd/pmd.cpp\
 	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp\
 	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
 	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
@@ -21,3 +21,13 @@ mintdb_LDFLAGS=-fPIC -rdynamic -L../boost/stage/lib -pthread
 mdb_CXXFLAGS=-I../boost -Ibson/src -Iinclude -D_FILE_OFFSET_BITS=64 -ggdb -Wall -O0
 mdb_LDADD=-lm -lboost_system -lboost_thread -lrt
 mdb_LDFLAGS=-fPIC -rdynamic -L../boost/stage/lib
+
+
+
+mtest_SOURCES=test/test.cpp oss/ossPrimitiveFileOp.cpp
+mtest_CXXFLAGS=-Iinclude -D_FILE_OFFSET_BITS=64 -ggdb -Wall -O0
+mtest_LDADD=-lm -lrt
+mtest_LDFLAGS=-fPIC -rdynamic -L../boost/stage/lib
+
+
+

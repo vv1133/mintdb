@@ -34,7 +34,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = mintdb$(EXEEXT) mdb$(EXEEXT)
+bin_PROGRAMS = mintdb$(EXEEXT) mdb$(EXEEXT) mtest$(EXEEXT)
 subdir = .
 DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
@@ -63,14 +63,21 @@ mdb_LINK = $(CXXLD) $(mdb_CXXFLAGS) $(CXXFLAGS) $(mdb_LDFLAGS) \
 	$(LDFLAGS) -o $@
 am_mintdb_OBJECTS = mintdb-pmdMain.$(OBJEXT) \
 	mintdb-pmdTcpListener.$(OBJEXT) mintdb-pmdOptions.$(OBJEXT) \
-	mintdb-ossSocket.$(OBJEXT) mintdb-ossPrimitiveFileOp.$(OBJEXT) \
-	mintdb-bsonobj.$(OBJEXT) mintdb-json.$(OBJEXT) \
-	mintdb-oid.$(OBJEXT) mintdb-base64.$(OBJEXT) md5.$(OBJEXT) \
-	mintdb-nonce.$(OBJEXT) mintdb-pd.$(OBJEXT)
+	mintdb-pmd.$(OBJEXT) mintdb-ossSocket.$(OBJEXT) \
+	mintdb-ossPrimitiveFileOp.$(OBJEXT) mintdb-bsonobj.$(OBJEXT) \
+	mintdb-json.$(OBJEXT) mintdb-oid.$(OBJEXT) \
+	mintdb-base64.$(OBJEXT) md5.$(OBJEXT) mintdb-nonce.$(OBJEXT) \
+	mintdb-pd.$(OBJEXT)
 mintdb_OBJECTS = $(am_mintdb_OBJECTS)
 mintdb_DEPENDENCIES =
 mintdb_LINK = $(CXXLD) $(mintdb_CXXFLAGS) $(CXXFLAGS) \
 	$(mintdb_LDFLAGS) $(LDFLAGS) -o $@
+am_mtest_OBJECTS = mtest-test.$(OBJEXT) \
+	mtest-ossPrimitiveFileOp.$(OBJEXT)
+mtest_OBJECTS = $(am_mtest_OBJECTS)
+mtest_DEPENDENCIES =
+mtest_LINK = $(CXXLD) $(mtest_CXXFLAGS) $(CXXFLAGS) $(mtest_LDFLAGS) \
+	$(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -84,8 +91,8 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(mdb_SOURCES) $(mintdb_SOURCES)
-DIST_SOURCES = $(mdb_SOURCES) $(mintdb_SOURCES)
+SOURCES = $(mdb_SOURCES) $(mintdb_SOURCES) $(mtest_SOURCES)
+DIST_SOURCES = $(mdb_SOURCES) $(mintdb_SOURCES) $(mtest_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -203,7 +210,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign
 mintdb_SOURCES = \
-	pmd/pmdMain.cpp pmd/pmdTcpListener.cpp pmd/pmdOptions.cpp\
+	pmd/pmdMain.cpp pmd/pmdTcpListener.cpp pmd/pmdOptions.cpp pmd/pmd.cpp\
 	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp\
 	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
 	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
@@ -222,6 +229,10 @@ mintdb_LDFLAGS = -fPIC -rdynamic -L../boost/stage/lib -pthread
 mdb_CXXFLAGS = -I../boost -Ibson/src -Iinclude -D_FILE_OFFSET_BITS=64 -ggdb -Wall -O0
 mdb_LDADD = -lm -lboost_system -lboost_thread -lrt
 mdb_LDFLAGS = -fPIC -rdynamic -L../boost/stage/lib
+mtest_SOURCES = test/test.cpp oss/ossPrimitiveFileOp.cpp
+mtest_CXXFLAGS = -Iinclude -D_FILE_OFFSET_BITS=64 -ggdb -Wall -O0
+mtest_LDADD = -lm -lrt
+mtest_LDFLAGS = -fPIC -rdynamic -L../boost/stage/lib
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -319,6 +330,9 @@ mdb$(EXEEXT): $(mdb_OBJECTS) $(mdb_DEPENDENCIES) $(EXTRA_mdb_DEPENDENCIES)
 mintdb$(EXEEXT): $(mintdb_OBJECTS) $(mintdb_DEPENDENCIES) $(EXTRA_mintdb_DEPENDENCIES) 
 	@rm -f mintdb$(EXEEXT)
 	$(mintdb_LINK) $(mintdb_OBJECTS) $(mintdb_LDADD) $(LIBS)
+mtest$(EXEEXT): $(mtest_OBJECTS) $(mtest_DEPENDENCIES) $(EXTRA_mtest_DEPENDENCIES) 
+	@rm -f mtest$(EXEEXT)
+	$(mtest_LINK) $(mtest_OBJECTS) $(mtest_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -346,9 +360,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-ossPrimitiveFileOp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-ossSocket.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-pd.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-pmd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-pmdMain.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-pmdOptions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-pmdTcpListener.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mtest-ossPrimitiveFileOp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mtest-test.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -588,6 +605,20 @@ mintdb-pmdOptions.obj: pmd/pmdOptions.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pmdOptions.obj `if test -f 'pmd/pmdOptions.cpp'; then $(CYGPATH_W) 'pmd/pmdOptions.cpp'; else $(CYGPATH_W) '$(srcdir)/pmd/pmdOptions.cpp'; fi`
 
+mintdb-pmd.o: pmd/pmd.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-pmd.o -MD -MP -MF $(DEPDIR)/mintdb-pmd.Tpo -c -o mintdb-pmd.o `test -f 'pmd/pmd.cpp' || echo '$(srcdir)/'`pmd/pmd.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/mintdb-pmd.Tpo $(DEPDIR)/mintdb-pmd.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='pmd/pmd.cpp' object='mintdb-pmd.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pmd.o `test -f 'pmd/pmd.cpp' || echo '$(srcdir)/'`pmd/pmd.cpp
+
+mintdb-pmd.obj: pmd/pmd.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-pmd.obj -MD -MP -MF $(DEPDIR)/mintdb-pmd.Tpo -c -o mintdb-pmd.obj `if test -f 'pmd/pmd.cpp'; then $(CYGPATH_W) 'pmd/pmd.cpp'; else $(CYGPATH_W) '$(srcdir)/pmd/pmd.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/mintdb-pmd.Tpo $(DEPDIR)/mintdb-pmd.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='pmd/pmd.cpp' object='mintdb-pmd.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pmd.obj `if test -f 'pmd/pmd.cpp'; then $(CYGPATH_W) 'pmd/pmd.cpp'; else $(CYGPATH_W) '$(srcdir)/pmd/pmd.cpp'; fi`
+
 mintdb-ossSocket.o: oss/ossSocket.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-ossSocket.o -MD -MP -MF $(DEPDIR)/mintdb-ossSocket.Tpo -c -o mintdb-ossSocket.o `test -f 'oss/ossSocket.cpp' || echo '$(srcdir)/'`oss/ossSocket.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/mintdb-ossSocket.Tpo $(DEPDIR)/mintdb-ossSocket.Po
@@ -699,6 +730,34 @@ mintdb-pd.obj: pd/pd.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='pd/pd.cpp' object='mintdb-pd.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pd.obj `if test -f 'pd/pd.cpp'; then $(CYGPATH_W) 'pd/pd.cpp'; else $(CYGPATH_W) '$(srcdir)/pd/pd.cpp'; fi`
+
+mtest-test.o: test/test.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mtest_CXXFLAGS) $(CXXFLAGS) -MT mtest-test.o -MD -MP -MF $(DEPDIR)/mtest-test.Tpo -c -o mtest-test.o `test -f 'test/test.cpp' || echo '$(srcdir)/'`test/test.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/mtest-test.Tpo $(DEPDIR)/mtest-test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/test.cpp' object='mtest-test.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mtest_CXXFLAGS) $(CXXFLAGS) -c -o mtest-test.o `test -f 'test/test.cpp' || echo '$(srcdir)/'`test/test.cpp
+
+mtest-test.obj: test/test.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mtest_CXXFLAGS) $(CXXFLAGS) -MT mtest-test.obj -MD -MP -MF $(DEPDIR)/mtest-test.Tpo -c -o mtest-test.obj `if test -f 'test/test.cpp'; then $(CYGPATH_W) 'test/test.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/mtest-test.Tpo $(DEPDIR)/mtest-test.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='test/test.cpp' object='mtest-test.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mtest_CXXFLAGS) $(CXXFLAGS) -c -o mtest-test.obj `if test -f 'test/test.cpp'; then $(CYGPATH_W) 'test/test.cpp'; else $(CYGPATH_W) '$(srcdir)/test/test.cpp'; fi`
+
+mtest-ossPrimitiveFileOp.o: oss/ossPrimitiveFileOp.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mtest_CXXFLAGS) $(CXXFLAGS) -MT mtest-ossPrimitiveFileOp.o -MD -MP -MF $(DEPDIR)/mtest-ossPrimitiveFileOp.Tpo -c -o mtest-ossPrimitiveFileOp.o `test -f 'oss/ossPrimitiveFileOp.cpp' || echo '$(srcdir)/'`oss/ossPrimitiveFileOp.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/mtest-ossPrimitiveFileOp.Tpo $(DEPDIR)/mtest-ossPrimitiveFileOp.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='oss/ossPrimitiveFileOp.cpp' object='mtest-ossPrimitiveFileOp.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mtest_CXXFLAGS) $(CXXFLAGS) -c -o mtest-ossPrimitiveFileOp.o `test -f 'oss/ossPrimitiveFileOp.cpp' || echo '$(srcdir)/'`oss/ossPrimitiveFileOp.cpp
+
+mtest-ossPrimitiveFileOp.obj: oss/ossPrimitiveFileOp.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mtest_CXXFLAGS) $(CXXFLAGS) -MT mtest-ossPrimitiveFileOp.obj -MD -MP -MF $(DEPDIR)/mtest-ossPrimitiveFileOp.Tpo -c -o mtest-ossPrimitiveFileOp.obj `if test -f 'oss/ossPrimitiveFileOp.cpp'; then $(CYGPATH_W) 'oss/ossPrimitiveFileOp.cpp'; else $(CYGPATH_W) '$(srcdir)/oss/ossPrimitiveFileOp.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/mtest-ossPrimitiveFileOp.Tpo $(DEPDIR)/mtest-ossPrimitiveFileOp.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='oss/ossPrimitiveFileOp.cpp' object='mtest-ossPrimitiveFileOp.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mtest_CXXFLAGS) $(CXXFLAGS) -c -o mtest-ossPrimitiveFileOp.obj `if test -f 'oss/ossPrimitiveFileOp.cpp'; then $(CYGPATH_W) 'oss/ossPrimitiveFileOp.cpp'; else $(CYGPATH_W) '$(srcdir)/oss/ossPrimitiveFileOp.cpp'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
