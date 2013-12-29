@@ -1,17 +1,18 @@
 AUTOMAKE_OPTIONS=foreign
 bin_PROGRAMS=mintdb mdb mtest
 mintdb_SOURCES=\
-	pmd/pmdMain.cpp pmd/pmdTcpListener.cpp pmd/pmdOptions.cpp pmd/pmd.cpp\
-	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp\
+	pmd/pmdMain.cpp pmd/pmdTcpListener.cpp pmd/pmdOptions.cpp \
+	pmd/pmd.cpp pmd/pmdEDU.cpp pmd/pmdEDUMgr.cpp pmd/pmdAgent.cpp\
 	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
 	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
+	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp\
 	pd/pd.cpp
 
 mdb_SOURCES=\
 	client/mdb.cpp client/command.cpp client/commandFactory.cpp \
-	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp\
 	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
 	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
+	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp\
 	pd/pd.cpp
 
 mintdb_CXXFLAGS=-I../boost -Ibson/src -Iinclude -D_FILE_OFFSET_BITS=64 -ggdb -Wall -O0

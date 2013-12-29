@@ -2,6 +2,7 @@
 #include "pmd.hpp"
 #include "pmdOptions.hpp"
 #include "pd.hpp"
+#include "pmdEDUMgr.hpp"
 
 static int pmdResolveArguments ( int argc, char **argv )
 {
@@ -135,6 +136,9 @@ static int pmdSetupSignalHandler ()
 int pmdMasterThreadMain ( int argc, char **argv )
 {
    int rc = MDB_OK ;
+   MDB_KRCB *krcb = pmdGetKRCB();
+   pmdEDUMgr *eduMgr = krcb->getEDUMgr();
+   EDUID agentEDU = PMD_INVALID_EDUID;
 
    // signal handler
    rc = pmdSetupSignalHandler () ;
@@ -148,6 +152,8 @@ int pmdMasterThreadMain ( int argc, char **argv )
    }
    PD_RC_CHECK ( rc, PDERROR, "Failed to resolve argument, rc = %d", rc ) ;
 
+   rc = eduMgr->startEDU(EDU_TYPE_TCPLISTENER, NULL, &agentEDU);
+   PD_RC_CHECK ( rc, PDERROR, "Failed to start tcplistener edu, rc = %d", rc ) ;
    while ( MDB_IS_DB_UP )
    {
       sleep(1) ;

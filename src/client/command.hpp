@@ -51,6 +51,14 @@ class ICommand
       std::string _jsonString;
 };
 
+class InsertCommand : public ICommand
+{
+   public:
+      int   execute( ossSocket & sock, std::vector<std::string> & argVec );
+   protected:
+      int   handleReply();
+};
+
 class ConnectCommand : public ICommand
 {
    public:

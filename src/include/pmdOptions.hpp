@@ -30,9 +30,9 @@ namespace po = boost::program_options ;
         ( PMD_COMMANDS_STRING ( PMD_OPTION_LOGPATH, ",l"), boost::program_options::value<string>(), "diagnostic log file full path" ) \
         ( PMD_COMMANDS_STRING ( PMD_OPTION_CONFPATH, ",c"), boost::program_options::value<string>(), "configuration file full path" ) \
 
-#define CONFFILENAME "edb.conf"
+#define CONFFILENAME "mdb.conf"
 #define LOGFILENAME  "diag.log"
-#define DBFILENAME   "edb.data"
+#define DBFILENAME   "mdb.data"
 #define SVCNAME      "48127"
 #define NUMPOOL      20
 
