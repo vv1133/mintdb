@@ -56,7 +56,8 @@ am_mdb_OBJECTS = mdb-mdb.$(OBJEXT) mdb-command.$(OBJEXT) \
 	mdb-commandFactory.$(OBJEXT) mdb-bsonobj.$(OBJEXT) \
 	mdb-json.$(OBJEXT) mdb-oid.$(OBJEXT) mdb-base64.$(OBJEXT) \
 	md5.$(OBJEXT) mdb-nonce.$(OBJEXT) mdb-ossSocket.$(OBJEXT) \
-	mdb-ossPrimitiveFileOp.$(OBJEXT) mdb-pd.$(OBJEXT)
+	mdb-ossPrimitiveFileOp.$(OBJEXT) mdb-pd.$(OBJEXT) \
+	mdb-msg.$(OBJEXT)
 mdb_OBJECTS = $(am_mdb_OBJECTS)
 mdb_DEPENDENCIES =
 mdb_LINK = $(CXXLD) $(mdb_CXXFLAGS) $(CXXFLAGS) $(mdb_LDFLAGS) \
@@ -68,7 +69,8 @@ am_mintdb_OBJECTS = mintdb-pmdMain.$(OBJEXT) \
 	mintdb-bsonobj.$(OBJEXT) mintdb-json.$(OBJEXT) \
 	mintdb-oid.$(OBJEXT) mintdb-base64.$(OBJEXT) md5.$(OBJEXT) \
 	mintdb-nonce.$(OBJEXT) mintdb-ossSocket.$(OBJEXT) \
-	mintdb-ossPrimitiveFileOp.$(OBJEXT) mintdb-pd.$(OBJEXT)
+	mintdb-ossPrimitiveFileOp.$(OBJEXT) mintdb-pd.$(OBJEXT) \
+	mintdb-msg.$(OBJEXT)
 mintdb_OBJECTS = $(am_mintdb_OBJECTS)
 mintdb_DEPENDENCIES =
 mintdb_LINK = $(CXXLD) $(mintdb_CXXFLAGS) $(CXXFLAGS) \
@@ -216,14 +218,14 @@ mintdb_SOURCES = \
 	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
 	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
 	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp\
-	pd/pd.cpp
+	pd/pd.cpp msg/msg.cpp
 
 mdb_SOURCES = \
 	client/mdb.cpp client/command.cpp client/commandFactory.cpp \
 	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
 	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
 	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp\
-	pd/pd.cpp
+	pd/pd.cpp msg/msg.cpp
 
 mintdb_CXXFLAGS = -I../boost -Ibson/src -Iinclude -D_FILE_OFFSET_BITS=64 -ggdb -Wall -O0
 mintdb_LDADD = -lpthread -lm -lboost_system -lboost_thread -lboost_program_options -lrt
@@ -349,6 +351,7 @@ include ./$(DEPDIR)/mdb-command.Po
 include ./$(DEPDIR)/mdb-commandFactory.Po
 include ./$(DEPDIR)/mdb-json.Po
 include ./$(DEPDIR)/mdb-mdb.Po
+include ./$(DEPDIR)/mdb-msg.Po
 include ./$(DEPDIR)/mdb-nonce.Po
 include ./$(DEPDIR)/mdb-oid.Po
 include ./$(DEPDIR)/mdb-ossPrimitiveFileOp.Po
@@ -357,6 +360,7 @@ include ./$(DEPDIR)/mdb-pd.Po
 include ./$(DEPDIR)/mintdb-base64.Po
 include ./$(DEPDIR)/mintdb-bsonobj.Po
 include ./$(DEPDIR)/mintdb-json.Po
+include ./$(DEPDIR)/mintdb-msg.Po
 include ./$(DEPDIR)/mintdb-nonce.Po
 include ./$(DEPDIR)/mintdb-oid.Po
 include ./$(DEPDIR)/mintdb-ossPrimitiveFileOp.Po
@@ -568,6 +572,20 @@ mdb-pd.obj: pd/pd.cpp
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-pd.obj `if test -f 'pd/pd.cpp'; then $(CYGPATH_W) 'pd/pd.cpp'; else $(CYGPATH_W) '$(srcdir)/pd/pd.cpp'; fi`
 
+mdb-msg.o: msg/msg.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-msg.o -MD -MP -MF $(DEPDIR)/mdb-msg.Tpo -c -o mdb-msg.o `test -f 'msg/msg.cpp' || echo '$(srcdir)/'`msg/msg.cpp
+	$(am__mv) $(DEPDIR)/mdb-msg.Tpo $(DEPDIR)/mdb-msg.Po
+#	source='msg/msg.cpp' object='mdb-msg.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-msg.o `test -f 'msg/msg.cpp' || echo '$(srcdir)/'`msg/msg.cpp
+
+mdb-msg.obj: msg/msg.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -MT mdb-msg.obj -MD -MP -MF $(DEPDIR)/mdb-msg.Tpo -c -o mdb-msg.obj `if test -f 'msg/msg.cpp'; then $(CYGPATH_W) 'msg/msg.cpp'; else $(CYGPATH_W) '$(srcdir)/msg/msg.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mdb-msg.Tpo $(DEPDIR)/mdb-msg.Po
+#	source='msg/msg.cpp' object='mdb-msg.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mdb_CXXFLAGS) $(CXXFLAGS) -c -o mdb-msg.obj `if test -f 'msg/msg.cpp'; then $(CYGPATH_W) 'msg/msg.cpp'; else $(CYGPATH_W) '$(srcdir)/msg/msg.cpp'; fi`
+
 mintdb-pmdMain.o: pmd/pmdMain.cpp
 	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-pmdMain.o -MD -MP -MF $(DEPDIR)/mintdb-pmdMain.Tpo -c -o mintdb-pmdMain.o `test -f 'pmd/pmdMain.cpp' || echo '$(srcdir)/'`pmd/pmdMain.cpp
 	$(am__mv) $(DEPDIR)/mintdb-pmdMain.Tpo $(DEPDIR)/mintdb-pmdMain.Po
@@ -777,6 +795,20 @@ mintdb-pd.obj: pd/pd.cpp
 #	source='pd/pd.cpp' object='mintdb-pd.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pd.obj `if test -f 'pd/pd.cpp'; then $(CYGPATH_W) 'pd/pd.cpp'; else $(CYGPATH_W) '$(srcdir)/pd/pd.cpp'; fi`
+
+mintdb-msg.o: msg/msg.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-msg.o -MD -MP -MF $(DEPDIR)/mintdb-msg.Tpo -c -o mintdb-msg.o `test -f 'msg/msg.cpp' || echo '$(srcdir)/'`msg/msg.cpp
+	$(am__mv) $(DEPDIR)/mintdb-msg.Tpo $(DEPDIR)/mintdb-msg.Po
+#	source='msg/msg.cpp' object='mintdb-msg.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-msg.o `test -f 'msg/msg.cpp' || echo '$(srcdir)/'`msg/msg.cpp
+
+mintdb-msg.obj: msg/msg.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-msg.obj -MD -MP -MF $(DEPDIR)/mintdb-msg.Tpo -c -o mintdb-msg.obj `if test -f 'msg/msg.cpp'; then $(CYGPATH_W) 'msg/msg.cpp'; else $(CYGPATH_W) '$(srcdir)/msg/msg.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mintdb-msg.Tpo $(DEPDIR)/mintdb-msg.Po
+#	source='msg/msg.cpp' object='mintdb-msg.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-msg.obj `if test -f 'msg/msg.cpp'; then $(CYGPATH_W) 'msg/msg.cpp'; else $(CYGPATH_W) '$(srcdir)/msg/msg.cpp'; fi`
 
 mtest-test.o: test/test.cpp
 	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mtest_CXXFLAGS) $(CXXFLAGS) -MT mtest-test.o -MD -MP -MF $(DEPDIR)/mtest-test.Tpo -c -o mtest-test.o `test -f 'test/test.cpp' || echo '$(srcdir)/'`test/test.cpp

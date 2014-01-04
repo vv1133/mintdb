@@ -51,6 +51,22 @@ class ICommand
       std::string _jsonString;
 };
 
+class QueryCommand : public ICommand
+{
+   public :
+      int execute ( ossSocket & sock, std::vector<std::string> & argVec );
+   protected :
+      int handleReply () ;
+} ;
+
+class DeleteCommand : public ICommand
+{
+   public :
+      int execute ( ossSocket & sock, std::vector<std::string> & argVec );
+   protected :
+      int handleReply () ;
+} ;
+
 class InsertCommand : public ICommand
 {
    public:
@@ -80,6 +96,14 @@ class HelpCommand : public ICommand
 {
    public:
       int execute(ossSocket & sock, std::vector<std::string> & argVec );
+};
+
+class SnapshotCommand : public ICommand
+{
+   public:
+      int execute ( ossSocket & sock, std::vector<std::string> & argVec );
+   protected :
+      int handleReply () ;
 };
 
 
