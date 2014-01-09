@@ -5,7 +5,7 @@ mintdb_SOURCES=\
 	pmd/pmd.cpp pmd/pmdEDU.cpp pmd/pmdEDUMgr.cpp pmd/pmdAgent.cpp\
 	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
 	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
-	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp\
+	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp oss/ossMmapFile.cpp\
 	pd/pd.cpp msg/msg.cpp
 
 mdb_SOURCES=\
@@ -25,9 +25,12 @@ mdb_LDFLAGS=-fPIC -rdynamic -L../boost/stage/lib
 
 
 
-mtest_SOURCES=test/test.cpp oss/ossPrimitiveFileOp.cpp
-mtest_CXXFLAGS=-Iinclude -D_FILE_OFFSET_BITS=64 -ggdb -Wall -O0
-mtest_LDADD=-lm -lrt
+mtest_SOURCES=test/test.cpp oss/ossPrimitiveFileOp.cpp oss/ossMmapFile.cpp\
+	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
+	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
+	pd/pd.cpp msg/msg.cpp
+mtest_CXXFLAGS=-I../boost -Ibson/src -Iinclude -D_FILE_OFFSET_BITS=64 -ggdb -Wall -O0
+mtest_LDADD=-lm -lboost_system -lboost_thread -lrt
 mtest_LDFLAGS=-fPIC -rdynamic -L../boost/stage/lib
 
 
