@@ -22,7 +22,7 @@ int ICommand::execute(ossSocket & sock, std::vector<std::string> & argVec)
 }
 int ICommand::getError(int code)
 {
-  switch(code)
+   switch(code)
    {
       case MDB_OK:
          break;
