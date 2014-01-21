@@ -3,6 +3,7 @@
 
 #include "core.hpp"
 #include "pmdEDUMgr.hpp"
+#include "rtn.hpp"
 
 enum MDB_DB_STATUS
 {
@@ -29,7 +30,8 @@ private :
    char          _svcName [ NI_MAXSERV + 1 ] ;
    MDB_DB_STATUS _dbStatus ;
 private :
-      pmdEDUMgr     _eduMgr ;
+   pmdEDUMgr     _eduMgr ;
+   rtn           _rtnMgr ;
 public :
    // constructor
    MDB_KRCB ()
@@ -49,7 +51,10 @@ public :
    {
        return &_eduMgr ;
    }
-
+   rtn *getRtnMgr()
+   {
+	   return &_rtnMgr;
+   }
    // inline function
    // get database status
    inline MDB_DB_STATUS getDBStatus ()

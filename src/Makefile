@@ -71,7 +71,7 @@ am_mintdb_OBJECTS = mintdb-pmdMain.$(OBJEXT) \
 	mintdb-nonce.$(OBJEXT) mintdb-ossSocket.$(OBJEXT) \
 	mintdb-ossPrimitiveFileOp.$(OBJEXT) \
 	mintdb-ossMmapFile.$(OBJEXT) mintdb-pd.$(OBJEXT) \
-	mintdb-msg.$(OBJEXT) mintdb-dms.$(OBJEXT)
+	mintdb-msg.$(OBJEXT) mintdb-dms.$(OBJEXT) mintdb-rtn.$(OBJEXT)
 mintdb_OBJECTS = $(am_mintdb_OBJECTS)
 mintdb_DEPENDENCIES =
 mintdb_LINK = $(CXXLD) $(mintdb_CXXFLAGS) $(CXXFLAGS) \
@@ -222,7 +222,7 @@ mintdb_SOURCES = \
 	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
 	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
 	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp oss/ossMmapFile.cpp\
-	pd/pd.cpp msg/msg.cpp dms/dms.cpp
+	pd/pd.cpp msg/msg.cpp dms/dms.cpp rtn/rtn.cpp
 
 mdb_SOURCES = \
 	client/mdb.cpp client/command.cpp client/commandFactory.cpp \
@@ -383,6 +383,7 @@ include ./$(DEPDIR)/mintdb-pmdEDUMgr.Po
 include ./$(DEPDIR)/mintdb-pmdMain.Po
 include ./$(DEPDIR)/mintdb-pmdOptions.Po
 include ./$(DEPDIR)/mintdb-pmdTcpListener.Po
+include ./$(DEPDIR)/mintdb-rtn.Po
 include ./$(DEPDIR)/mtest-base64.Po
 include ./$(DEPDIR)/mtest-bsonobj.Po
 include ./$(DEPDIR)/mtest-json.Po
@@ -855,6 +856,20 @@ mintdb-dms.obj: dms/dms.cpp
 #	source='dms/dms.cpp' object='mintdb-dms.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-dms.obj `if test -f 'dms/dms.cpp'; then $(CYGPATH_W) 'dms/dms.cpp'; else $(CYGPATH_W) '$(srcdir)/dms/dms.cpp'; fi`
+
+mintdb-rtn.o: rtn/rtn.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-rtn.o -MD -MP -MF $(DEPDIR)/mintdb-rtn.Tpo -c -o mintdb-rtn.o `test -f 'rtn/rtn.cpp' || echo '$(srcdir)/'`rtn/rtn.cpp
+	$(am__mv) $(DEPDIR)/mintdb-rtn.Tpo $(DEPDIR)/mintdb-rtn.Po
+#	source='rtn/rtn.cpp' object='mintdb-rtn.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-rtn.o `test -f 'rtn/rtn.cpp' || echo '$(srcdir)/'`rtn/rtn.cpp
+
+mintdb-rtn.obj: rtn/rtn.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-rtn.obj -MD -MP -MF $(DEPDIR)/mintdb-rtn.Tpo -c -o mintdb-rtn.obj `if test -f 'rtn/rtn.cpp'; then $(CYGPATH_W) 'rtn/rtn.cpp'; else $(CYGPATH_W) '$(srcdir)/rtn/rtn.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mintdb-rtn.Tpo $(DEPDIR)/mintdb-rtn.Po
+#	source='rtn/rtn.cpp' object='mintdb-rtn.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-rtn.obj `if test -f 'rtn/rtn.cpp'; then $(CYGPATH_W) 'rtn/rtn.cpp'; else $(CYGPATH_W) '$(srcdir)/rtn/rtn.cpp'; fi`
 
 mtest-test.o: test/test.cpp
 	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mtest_CXXFLAGS) $(CXXFLAGS) -MT mtest-test.o -MD -MP -MF $(DEPDIR)/mtest-test.Tpo -c -o mtest-test.o `test -f 'test/test.cpp' || echo '$(srcdir)/'`test/test.cpp

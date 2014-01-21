@@ -13,6 +13,5 @@ int MDB_KRCB::init ( pmdOptions *options )
    setSvcName ( options->getServiceName () ) ;
    setMaxPool ( options->getMaxPool () ) ;
    PD_LOG(PDEVENT, "%s", options->getDBPath());
-//   return _rtnMgr.rtnInitialize() ;
-   return MDB_OK;
+   return _rtnMgr.rtnInitialize() ;
 }
