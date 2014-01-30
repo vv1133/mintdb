@@ -70,8 +70,9 @@ am_mintdb_OBJECTS = mintdb-pmdMain.$(OBJEXT) \
 	mintdb-oid.$(OBJEXT) mintdb-base64.$(OBJEXT) md5.$(OBJEXT) \
 	mintdb-nonce.$(OBJEXT) mintdb-ossSocket.$(OBJEXT) \
 	mintdb-ossPrimitiveFileOp.$(OBJEXT) \
-	mintdb-ossMmapFile.$(OBJEXT) mintdb-pd.$(OBJEXT) \
-	mintdb-msg.$(OBJEXT) mintdb-dms.$(OBJEXT) mintdb-rtn.$(OBJEXT)
+	mintdb-ossMmapFile.$(OBJEXT) mintdb-ossHash.$(OBJEXT) \
+	mintdb-pd.$(OBJEXT) mintdb-msg.$(OBJEXT) mintdb-dms.$(OBJEXT) \
+	mintdb-rtn.$(OBJEXT) mintdb-ixmBucket.$(OBJEXT)
 mintdb_OBJECTS = $(am_mintdb_OBJECTS)
 mintdb_DEPENDENCIES =
 mintdb_LINK = $(CXXLD) $(mintdb_CXXFLAGS) $(CXXFLAGS) \
@@ -222,7 +223,8 @@ mintdb_SOURCES = \
 	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
 	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
 	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp oss/ossMmapFile.cpp\
-	pd/pd.cpp msg/msg.cpp dms/dms.cpp rtn/rtn.cpp
+	oss/ossHash.cpp\
+	pd/pd.cpp msg/msg.cpp dms/dms.cpp rtn/rtn.cpp ixm/ixmBucket.cpp
 
 mdb_SOURCES = \
 	client/mdb.cpp client/command.cpp client/commandFactory.cpp \
@@ -368,10 +370,12 @@ include ./$(DEPDIR)/mdb-pd.Po
 include ./$(DEPDIR)/mintdb-base64.Po
 include ./$(DEPDIR)/mintdb-bsonobj.Po
 include ./$(DEPDIR)/mintdb-dms.Po
+include ./$(DEPDIR)/mintdb-ixmBucket.Po
 include ./$(DEPDIR)/mintdb-json.Po
 include ./$(DEPDIR)/mintdb-msg.Po
 include ./$(DEPDIR)/mintdb-nonce.Po
 include ./$(DEPDIR)/mintdb-oid.Po
+include ./$(DEPDIR)/mintdb-ossHash.Po
 include ./$(DEPDIR)/mintdb-ossMmapFile.Po
 include ./$(DEPDIR)/mintdb-ossPrimitiveFileOp.Po
 include ./$(DEPDIR)/mintdb-ossSocket.Po
@@ -815,6 +819,20 @@ mintdb-ossMmapFile.obj: oss/ossMmapFile.cpp
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-ossMmapFile.obj `if test -f 'oss/ossMmapFile.cpp'; then $(CYGPATH_W) 'oss/ossMmapFile.cpp'; else $(CYGPATH_W) '$(srcdir)/oss/ossMmapFile.cpp'; fi`
 
+mintdb-ossHash.o: oss/ossHash.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-ossHash.o -MD -MP -MF $(DEPDIR)/mintdb-ossHash.Tpo -c -o mintdb-ossHash.o `test -f 'oss/ossHash.cpp' || echo '$(srcdir)/'`oss/ossHash.cpp
+	$(am__mv) $(DEPDIR)/mintdb-ossHash.Tpo $(DEPDIR)/mintdb-ossHash.Po
+#	source='oss/ossHash.cpp' object='mintdb-ossHash.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-ossHash.o `test -f 'oss/ossHash.cpp' || echo '$(srcdir)/'`oss/ossHash.cpp
+
+mintdb-ossHash.obj: oss/ossHash.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-ossHash.obj -MD -MP -MF $(DEPDIR)/mintdb-ossHash.Tpo -c -o mintdb-ossHash.obj `if test -f 'oss/ossHash.cpp'; then $(CYGPATH_W) 'oss/ossHash.cpp'; else $(CYGPATH_W) '$(srcdir)/oss/ossHash.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mintdb-ossHash.Tpo $(DEPDIR)/mintdb-ossHash.Po
+#	source='oss/ossHash.cpp' object='mintdb-ossHash.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-ossHash.obj `if test -f 'oss/ossHash.cpp'; then $(CYGPATH_W) 'oss/ossHash.cpp'; else $(CYGPATH_W) '$(srcdir)/oss/ossHash.cpp'; fi`
+
 mintdb-pd.o: pd/pd.cpp
 	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-pd.o -MD -MP -MF $(DEPDIR)/mintdb-pd.Tpo -c -o mintdb-pd.o `test -f 'pd/pd.cpp' || echo '$(srcdir)/'`pd/pd.cpp
 	$(am__mv) $(DEPDIR)/mintdb-pd.Tpo $(DEPDIR)/mintdb-pd.Po
@@ -870,6 +888,20 @@ mintdb-rtn.obj: rtn/rtn.cpp
 #	source='rtn/rtn.cpp' object='mintdb-rtn.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-rtn.obj `if test -f 'rtn/rtn.cpp'; then $(CYGPATH_W) 'rtn/rtn.cpp'; else $(CYGPATH_W) '$(srcdir)/rtn/rtn.cpp'; fi`
+
+mintdb-ixmBucket.o: ixm/ixmBucket.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-ixmBucket.o -MD -MP -MF $(DEPDIR)/mintdb-ixmBucket.Tpo -c -o mintdb-ixmBucket.o `test -f 'ixm/ixmBucket.cpp' || echo '$(srcdir)/'`ixm/ixmBucket.cpp
+	$(am__mv) $(DEPDIR)/mintdb-ixmBucket.Tpo $(DEPDIR)/mintdb-ixmBucket.Po
+#	source='ixm/ixmBucket.cpp' object='mintdb-ixmBucket.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-ixmBucket.o `test -f 'ixm/ixmBucket.cpp' || echo '$(srcdir)/'`ixm/ixmBucket.cpp
+
+mintdb-ixmBucket.obj: ixm/ixmBucket.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-ixmBucket.obj -MD -MP -MF $(DEPDIR)/mintdb-ixmBucket.Tpo -c -o mintdb-ixmBucket.obj `if test -f 'ixm/ixmBucket.cpp'; then $(CYGPATH_W) 'ixm/ixmBucket.cpp'; else $(CYGPATH_W) '$(srcdir)/ixm/ixmBucket.cpp'; fi`
+	$(am__mv) $(DEPDIR)/mintdb-ixmBucket.Tpo $(DEPDIR)/mintdb-ixmBucket.Po
+#	source='ixm/ixmBucket.cpp' object='mintdb-ixmBucket.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-ixmBucket.obj `if test -f 'ixm/ixmBucket.cpp'; then $(CYGPATH_W) 'ixm/ixmBucket.cpp'; else $(CYGPATH_W) '$(srcdir)/ixm/ixmBucket.cpp'; fi`
 
 mtest-test.o: test/test.cpp
 	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mtest_CXXFLAGS) $(CXXFLAGS) -MT mtest-test.o -MD -MP -MF $(DEPDIR)/mtest-test.Tpo -c -o mtest-test.o `test -f 'test/test.cpp' || echo '$(srcdir)/'`test/test.cpp

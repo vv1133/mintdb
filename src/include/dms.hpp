@@ -5,12 +5,13 @@
 #include "ossMmapFile.hpp"
 #include "bson.h"
 #include "dmsRecord.hpp"
+#include "ixmBucket.hpp"
 #include <vector>
 
 #define DMS_EXTEND_SIZE 65536
 // 4MB for page size
 #define DMS_PAGESIZE   4194304
-#define DMS_MAX_RECORD (DMS_PAGESIZE-sizeof(dmsHeader)-sizeof(dmsRecord)-sizeof(SLOTOFF))
+#define DMS_MAX_RECORD (DMS_PAGESIZE-sizeof(dmsPageHeader)-sizeof(dmsRecord)-sizeof(SLOTOFF))
 #define DMS_MAX_PAGES  262144
 typedef unsigned int SLOTOFF ;
 #define DMS_INVALID_SLOTID       0xFFFFFFFF
@@ -92,8 +93,9 @@ private :
    ossSLatch             _mutex ;
    ossXLatch             _extendMutex ;
    char                 *_pFileName ;
+   ixmBucketManager     *_ixmBucketMgr ;
 public :
-   dmsFile () ;
+   dmsFile ( ixmBucketManager *ixmBucketMgr ) ;
    ~dmsFile () ;
    // initialize the dms file
    int initialize ( const char *pFileName ) ;
