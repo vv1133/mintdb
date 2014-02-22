@@ -66,10 +66,10 @@ am_mintdb_OBJECTS = mintdb-pmdMain.$(OBJEXT) \
 	mintdb-pmdTcpListener.$(OBJEXT) mintdb-pmdOptions.$(OBJEXT) \
 	mintdb-pmd.$(OBJEXT) mintdb-pmdEDU.$(OBJEXT) \
 	mintdb-pmdEDUMgr.$(OBJEXT) mintdb-pmdAgent.$(OBJEXT) \
-	mintdb-bsonobj.$(OBJEXT) mintdb-json.$(OBJEXT) \
-	mintdb-oid.$(OBJEXT) mintdb-base64.$(OBJEXT) md5.$(OBJEXT) \
-	mintdb-nonce.$(OBJEXT) mintdb-ossSocket.$(OBJEXT) \
-	mintdb-ossPrimitiveFileOp.$(OBJEXT) \
+	mintdb-monCB.$(OBJEXT) mintdb-bsonobj.$(OBJEXT) \
+	mintdb-json.$(OBJEXT) mintdb-oid.$(OBJEXT) \
+	mintdb-base64.$(OBJEXT) md5.$(OBJEXT) mintdb-nonce.$(OBJEXT) \
+	mintdb-ossSocket.$(OBJEXT) mintdb-ossPrimitiveFileOp.$(OBJEXT) \
 	mintdb-ossMmapFile.$(OBJEXT) mintdb-ossHash.$(OBJEXT) \
 	mintdb-pd.$(OBJEXT) mintdb-msg.$(OBJEXT) mintdb-dms.$(OBJEXT) \
 	mintdb-rtn.$(OBJEXT) mintdb-ixmBucket.$(OBJEXT)
@@ -220,6 +220,7 @@ AUTOMAKE_OPTIONS = foreign
 mintdb_SOURCES = \
 	pmd/pmdMain.cpp pmd/pmdTcpListener.cpp pmd/pmdOptions.cpp \
 	pmd/pmd.cpp pmd/pmdEDU.cpp pmd/pmdEDUMgr.cpp pmd/pmdAgent.cpp\
+	mon/monCB.cpp \
 	bson/src/bsonobj.cpp bson/src/util/json.cpp bson/src/oid.cpp \
 	bson/src/lib/base64.cpp bson/src/lib/md5.c bson/src/lib/nonce.cpp\
 	oss/ossSocket.cpp oss/ossPrimitiveFileOp.cpp oss/ossMmapFile.cpp\
@@ -372,6 +373,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-dms.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-ixmBucket.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-json.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-monCB.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-msg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-nonce.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mintdb-oid.Po@am__quote@
@@ -706,6 +708,20 @@ mintdb-pmdAgent.obj: pmd/pmdAgent.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='pmd/pmdAgent.cpp' object='mintdb-pmdAgent.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-pmdAgent.obj `if test -f 'pmd/pmdAgent.cpp'; then $(CYGPATH_W) 'pmd/pmdAgent.cpp'; else $(CYGPATH_W) '$(srcdir)/pmd/pmdAgent.cpp'; fi`
+
+mintdb-monCB.o: mon/monCB.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-monCB.o -MD -MP -MF $(DEPDIR)/mintdb-monCB.Tpo -c -o mintdb-monCB.o `test -f 'mon/monCB.cpp' || echo '$(srcdir)/'`mon/monCB.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/mintdb-monCB.Tpo $(DEPDIR)/mintdb-monCB.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mon/monCB.cpp' object='mintdb-monCB.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-monCB.o `test -f 'mon/monCB.cpp' || echo '$(srcdir)/'`mon/monCB.cpp
+
+mintdb-monCB.obj: mon/monCB.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-monCB.obj -MD -MP -MF $(DEPDIR)/mintdb-monCB.Tpo -c -o mintdb-monCB.obj `if test -f 'mon/monCB.cpp'; then $(CYGPATH_W) 'mon/monCB.cpp'; else $(CYGPATH_W) '$(srcdir)/mon/monCB.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/mintdb-monCB.Tpo $(DEPDIR)/mintdb-monCB.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='mon/monCB.cpp' object='mintdb-monCB.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -c -o mintdb-monCB.obj `if test -f 'mon/monCB.cpp'; then $(CYGPATH_W) 'mon/monCB.cpp'; else $(CYGPATH_W) '$(srcdir)/mon/monCB.cpp'; fi`
 
 mintdb-bsonobj.o: bson/src/bsonobj.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mintdb_CXXFLAGS) $(CXXFLAGS) -MT mintdb-bsonobj.o -MD -MP -MF $(DEPDIR)/mintdb-bsonobj.Tpo -c -o mintdb-bsonobj.o `test -f 'bson/src/bsonobj.cpp' || echo '$(srcdir)/'`bson/src/bsonobj.cpp

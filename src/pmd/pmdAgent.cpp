@@ -5,6 +5,8 @@
 #include "../bson/src/bson.h"
 #include "pmd.hpp"
 #include "msg.hpp"
+#include "monCB.hpp"
+
 using namespace bson;
 using namespace std;
 
@@ -81,6 +83,10 @@ static int pmdProcessAgentRequest ( char *pReceiveBuffer,
 			}
 			// insert record
 			rc = rtnMgr->rtnInsert ( insertor ) ;
+		    if ( !rc )
+		    {
+		       krcb->getMonAppCB().increaseInsertTimes();
+		    }
          }
          catch ( std::exception &e )
          {
@@ -109,6 +115,10 @@ static int pmdProcessAgentRequest ( char *pReceiveBuffer,
                   "Query condition: %s",
                   recordID.toString().c_str() ) ;
 		 rc = rtnMgr->rtnFind(recordID, retObj);
+		 if ( !rc )
+		 {
+		    krcb->getMonAppCB().increaseQueryTimes();
+		 }
       }
       else if ( OP_DELETE == opCode )
       {
@@ -127,18 +137,24 @@ static int pmdProcessAgentRequest ( char *pReceiveBuffer,
                   "Delete condition: %s",
                   recordID.toString().c_str() ) ;
 		 rc = rtnMgr->rtnRemove(recordID);
+		 if ( !rc )
+		 {
+		    krcb->getMonAppCB().increaseDelTimes();
+		 }
       }
       else if ( OP_SNAPSHOT == opCode )
       {
          PD_LOG ( PDDEBUG,
                   "Snapshot request received" ) ;
+         MonAppCB monAppCB = krcb->getMonAppCB();
          try
          {
             BSONObjBuilder b ;
-            b.append ( "insertTimes", 100 ) ;
-            b.append ( "delTimes", 1000 ) ;
-            b.append ( "queryTimes", 2000 ) ;
-            b.append ( "serverRunTime", 100 ) ;
+            b.append ( "insertTimes", monAppCB.getInsertTimes() ) ;
+            b.append ( "delTimes", monAppCB.getDelTimes() ) ;
+            b.append ( "queryTimes", monAppCB.getQueryTimes() ) ;
+            b.append ( "serverRunTime", monAppCB.getServerRuntime() ) ;
+            b.append ( "clientCounter", monAppCB.getClientCounter() ) ;
             retObj = b.obj () ;
          }
          catch ( std::exception &e )
@@ -235,6 +251,10 @@ int pmdAgentEntryPoint ( pmdEDUCB *cb, void *arg )
    int packetLength      = 0 ;
    EDUID myEDUID         = cb->getID () ;
    pmdEDUMgr *eduMgr     = cb->getEDUMgr() ;
+
+   //increase clinet counter
+   MDB_KRCB *krcb                   = pmdGetKRCB () ;
+   krcb->getMonAppCB().increaseClientCounter();
 
    // receive socket from argument
    int s                 = *(( int *) &arg ) ;
@@ -351,6 +371,7 @@ int pmdAgentEntryPoint ( pmdEDUCB *cb, void *arg )
       {
          PD_LOG ( PDERROR, "Error processing Agent request, rc=%d", rc ) ;
       }
+	
       // send reply if it's not disconnected message
       if ( !disconnect )
       {
@@ -374,6 +395,8 @@ done :
       free ( pReceiveBuffer )  ;
    if ( pResultBuffer )
       free ( pResultBuffer )  ;
+
+   krcb->getMonAppCB().decreaseClientCounter();
    sock.close () ;
    return rc;
 error :
